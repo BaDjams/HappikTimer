@@ -52,7 +52,18 @@
     <button id="btn-done" class="btn-tap-zone" onclick="routeDone()">
       ✋ J'AI RÉUSSI !<br><span class="tap-hint">Touche ici quand tu reviens</span>
     </button>
-    <button class="btn btn-ghost btn-small" onclick="abandonRun()">✖ Abandonner</button>
+    <div class="run-actions">
+      <button class="btn btn-ghost btn-small" onclick="pauseRun()">⏸ Pause</button>
+      <button class="btn btn-ghost btn-small" onclick="abandonRun()">✖ Abandonner</button>
+    </div>
+  </div>
+
+  <!-- ÉCRAN PAUSE -->
+  <div id="screen-pause" class="screen">
+    <p class="big-emoji">⏸</p>
+    <h2 class="screen-title">Pause !</h2>
+    <p class="explain">Le chrono est arrêté.<br>Piste occupée ? Pause pipi ?<br>Prends ton temps ! 🚽🙂</p>
+    <button class="btn btn-big btn-green pulse" onclick="resumeRun()">▶ Reprendre !</button>
   </div>
 
   <!-- ÉCRAN TRANSITION -->
@@ -84,10 +95,30 @@
       <button id="btn-admin" class="btn-gear" onclick="toggleAdmin()" title="Mode admin">⚙️</button>
     </div>
     <p id="admin-hint" class="admin-hint hidden">Mode admin : touche 🗑 pour supprimer une ligne</p>
+    <div id="admin-tools" class="admin-tools hidden">
+      <div class="admin-buttons">
+        <button class="btn btn-blue btn-small" onclick="exportLeaderboard()">📤 Exporter les scores</button>
+        <button class="btn btn-orange btn-small" onclick="openImport()">📥 Importer</button>
+      </div>
+      <p class="version-line">Happik Runner <strong>v<span id="version-num"></span></strong></p>
+      <div id="changelog" class="changelog"></div>
+    </div>
     <div id="leaderboard-list" class="leaderboard-list"></div>
     <button class="btn btn-ghost" id="btn-leaderboard-back" onclick="leaderboardBack()">← Retour</button>
   </div>
 
+  <!-- MODALE EXPORT / IMPORT -->
+  <div id="modal" class="modal hidden">
+    <div class="modal-box">
+      <h3 id="modal-title" class="modal-title"></h3>
+      <p id="modal-hint" class="modal-hint"></p>
+      <textarea id="modal-text" spellcheck="false"></textarea>
+      <div id="modal-actions" class="modal-actions"></div>
+      <button class="btn btn-ghost btn-small" onclick="closeModal()">Fermer</button>
+    </div>
+  </div>
+
+  <script src="version.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

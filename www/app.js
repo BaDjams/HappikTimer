@@ -60,6 +60,7 @@ let timerInterval = null;
 let lastRunId = null;
 let leaderboardOrigin = "home";
 let adminMode = false;
+let pausedAt = 0;
 
 // ---------- OUTILS ----------
 
@@ -214,6 +215,23 @@ function nextRoute() {
   showScreen("screen-run");
 }
 
+function pauseRun() {
+  clearInterval(timerInterval);
+  timerInterval = null;
+  pausedAt = Date.now();
+  showScreen("screen-pause");
+}
+
+function resumeRun() {
+  // décale les points de départ pour que la pause ne compte pas dans les chronos
+  const delta = Date.now() - pausedAt;
+  routeStart += delta;
+  runStart += delta;
+  timerInterval = setInterval(updateTimers, 100);
+  updateTimers();
+  showScreen("screen-run");
+}
+
 function abandonRun() {
   if (!confirm("Abandonner la course ?")) return;
   clearInterval(timerInterval);
@@ -295,6 +313,7 @@ function renderLeaderboard() {
   box.innerHTML = "";
   document.getElementById("btn-admin").classList.toggle("active", adminMode);
   document.getElementById("admin-hint").classList.toggle("hidden", !adminMode);
+  document.getElementById("admin-tools").classList.toggle("hidden", !adminMode);
 
   if (lb.length === 0) {
     box.innerHTML = '<p class="lb-empty">Aucune course pour le moment.<br>À toi de jouer ! 🧗</p>';
@@ -342,3 +361,129 @@ function deleteEntry(id) {
 function leaderboardBack() {
   showScreen(leaderboardOrigin === "results" ? "screen-results" : "screen-home");
 }
+
+// ---------- EXPORT / IMPORT ----------
+
+function openModal(title, hint, text, actions) {
+  document.getElementById("modal-title").textContent = title;
+  document.getElementById("modal-hint").textContent = hint;
+  const ta = document.getElementById("modal-text");
+  ta.value = text;
+  ta.readOnly = actions.some(a => a.readonly);
+  const box = document.getElementById("modal-actions");
+  box.innerHTML = "";
+  for (const a of actions) {
+    const btn = document.createElement("button");
+    btn.className = "btn btn-small " + a.cls;
+    btn.textContent = a.label;
+    btn.onclick = a.fn;
+    box.appendChild(btn);
+  }
+  document.getElementById("modal").classList.remove("hidden");
+}
+
+function closeModal() {
+  document.getElementById("modal").classList.add("hidden");
+}
+
+function exportLeaderboard() {
+  const data = {
+    app: "happik-runner",
+    version: APP_VERSION,
+    exported: new Date().toISOString(),
+    leaderboard: loadLeaderboard(),
+  };
+  const json = JSON.stringify(data, null, 2);
+  const fname = "happik-scores-" + new Date().toISOString().slice(0, 10) + ".json";
+
+  const actions = [
+    { label: "📋 Copier", cls: "btn-blue", readonly: true, fn: () => copyExport(json) },
+  ];
+  if (navigator.share) {
+    actions.push({ label: "📤 Partager", cls: "btn-green", readonly: true, fn: () => shareExport(json, fname) });
+  }
+  openModal("📤 Export des scores", "Copie ce texte et garde-le précieusement (mail, notes...). Tu pourras le réimporter plus tard.", json, actions);
+}
+
+async function copyExport(json) {
+  try {
+    await navigator.clipboard.writeText(json);
+    alert("Scores copiés dans le presse-papier !");
+  } catch {
+    // repli : sélection manuelle
+    const ta = document.getElementById("modal-text");
+    ta.focus();
+    ta.select();
+    alert("Copie automatique impossible : le texte est sélectionné, copie-le manuellement.");
+  }
+}
+
+async function shareExport(json, fname) {
+  try {
+    const file = new File([json], fname, { type: "application/json" });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: fname });
+      return;
+    }
+    await navigator.share({ title: fname, text: json });
+  } catch {
+    // partage annulé ou non supporté : la modale reste ouverte pour copier
+  }
+}
+
+function openImport() {
+  openModal(
+    "📥 Importer des scores",
+    "Colle ici le contenu d'un export JSON puis touche Importer. Les scores s'ajoutent sans écraser ceux déjà présents.",
+    "",
+    [{ label: "✅ Importer", cls: "btn-green", fn: doImport }]
+  );
+}
+
+function doImport() {
+  const txt = document.getElementById("modal-text").value.trim();
+  let list;
+  try {
+    const parsed = JSON.parse(txt);
+    list = Array.isArray(parsed) ? parsed : parsed.leaderboard;
+    if (!Array.isArray(list)) throw new Error();
+  } catch {
+    alert("Contenu invalide : colle le texte complet d'un export de scores (.json).");
+    return;
+  }
+  const valid = list.filter(e =>
+    e && typeof e.id === "number" && typeof e.nickname === "string" &&
+    typeof e.total === "number" && typeof e.date === "string"
+  );
+  const lb = loadLeaderboard();
+  const ids = new Set(lb.map(e => e.id));
+  const added = valid.filter(e => !ids.has(e.id));
+  if (added.length === 0) {
+    alert(valid.length === 0 ? "Aucun score valide trouvé dans ce texte." : "Rien à importer : ces scores sont déjà dans le classement.");
+    return;
+  }
+  lb.push(...added);
+  lb.sort((a, b) => a.total - b.total);
+  saveLeaderboard(lb);
+  closeModal();
+  renderLeaderboard();
+  alert(added.length + " score(s) importé(s) !");
+}
+
+// ---------- VERSION ----------
+
+function renderVersionInfo() {
+  document.getElementById("version-num").textContent = APP_VERSION;
+  const box = document.getElementById("changelog");
+  box.innerHTML = "";
+  CHANGELOG.forEach(c => {
+    const entry = document.createElement("div");
+    entry.className = "changelog-entry";
+    entry.innerHTML =
+      '<span class="changelog-v">v' + c.v + '</span>' +
+      '<ul>' + c.notes.map(n => "<li>" + n + "</li>").join("") + '</ul>';
+    box.appendChild(entry);
+  });
+}
+
+renderVersionInfo();
