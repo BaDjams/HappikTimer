@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Happik Runner</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ÉCRAN ACCUEIL -->
+  <div id="screen-home" class="screen active">
+    <div class="stars-bg"></div>
+    <h1 class="app-title"><span class="bounce">🧗</span> Happik<br>Runner</h1>
+    <p class="subtitle">Prêt à grimper ?</p>
+    <button class="btn btn-big btn-green" onclick="goToNickname()">🚀 Démarrer une course</button>
+    <button class="btn btn-purple" onclick="showLeaderboard('home')">🏆 Classement</button>
+  </div>
+
+  <!-- ÉCRAN SURNOM -->
+  <div id="screen-nickname" class="screen">
+    <h2 class="screen-title">Choisis ton surnom !</h2>
+    <div id="nickname-choices" class="nickname-list"></div>
+    <button class="btn btn-orange" onclick="rollNicknames()">🎲 D'autres idées !</button>
+    <button class="btn btn-ghost" onclick="showScreen('screen-home')">← Retour</button>
+  </div>
+
+  <!-- ÉCRAN PRÊT -->
+  <div id="screen-ready" class="screen">
+    <p class="hello">Salut <span id="ready-nickname" class="nickname-badge"></span> !</p>
+    <p class="explain">Tu vas faire <strong>10 pistes</strong>.<br>
+      À chaque indice, trouve la bonne piste,<br>grimpe jusqu'à l'objectif,<br>
+      puis reviens toucher l'écran ! 🏃💨</p>
+    <button class="btn btn-big btn-green pulse" onclick="startRun()">🧗 Démarrer le parcours !</button>
+    <button class="btn btn-ghost" onclick="goToNickname()">← Changer de surnom</button>
+  </div>
+
+  <!-- ÉCRAN COURSE -->
+  <div id="screen-run" class="screen">
+    <div class="run-header">
+      <span id="run-progress" class="progress-badge">Piste 1/10</span>
+      <span id="run-total-timer" class="total-timer">0:00</span>
+    </div>
+    <div id="clue-card" class="clue-card">
+      <p class="clue-label">🔍 Indice</p>
+      <p id="clue-text" class="clue-text"></p>
+      <div id="objective-badge" class="objective-badge"></div>
+    </div>
+    <div id="route-timer" class="route-timer">0.0</div>
+    <button id="btn-done" class="btn-tap-zone" onclick="routeDone()">
+      ✋ J'AI RÉUSSI !<br><span class="tap-hint">Touche ici quand tu reviens</span>
+    </button>
+    <button class="btn btn-ghost btn-small" onclick="abandonRun()">✖ Abandonner</button>
+  </div>
+
+  <!-- ÉCRAN TRANSITION -->
+  <div id="screen-transition" class="screen">
+    <p class="big-emoji" id="transition-emoji">🎉</p>
+    <p class="transition-text" id="transition-text">Bravo !</p>
+    <p class="transition-time" id="transition-time"></p>
+    <button class="btn btn-big btn-blue pulse" onclick="nextRoute()">➡ Indice suivant !</button>
+  </div>
+
+  <!-- ÉCRAN RÉSULTATS -->
+  <div id="screen-results" class="screen scrollable">
+    <p class="big-emoji">🏁</p>
+    <h2 class="screen-title">Parcours terminé !</h2>
+    <p class="hello"><span id="result-nickname" class="nickname-badge"></span></p>
+    <div class="final-time" id="result-total"></div>
+    <p id="result-rank" class="rank-text"></p>
+    <h3 class="section-title">⏱ Tes temps par piste</h3>
+    <div id="result-details" class="detail-list"></div>
+    <button class="btn btn-big btn-purple" onclick="showLeaderboard('results')">🏆 Voir le classement</button>
+    <button class="btn btn-green" onclick="goToNickname()">🔄 Nouvelle course</button>
+    <button class="btn btn-ghost" onclick="showScreen('screen-home')">🏠 Accueil</button>
+  </div>
+
+  <!-- ÉCRAN CLASSEMENT -->
+  <div id="screen-leaderboard" class="screen scrollable">
+    <h2 class="screen-title">🏆 Classement</h2>
+    <div id="leaderboard-list" class="leaderboard-list"></div>
+    <button class="btn btn-ghost" id="btn-leaderboard-back" onclick="leaderboardBack()">← Retour</button>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

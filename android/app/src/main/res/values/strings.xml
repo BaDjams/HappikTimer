@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Happik Runner</string>
+    <string name="title_activity_main">Happik Runner</string>
+    <string name="package_name">fr.happik.runner</string>
+    <string name="custom_url_scheme">fr.happik.runner</string>
+</resources>
