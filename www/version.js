@@ -1,9 +1,18 @@
 // Version de l'application.
 // À chaque évolution : incrémenter APP_VERSION et ajouter une entrée en tête du CHANGELOG.
 // Le workflow GitHub Actions lit APP_VERSION pour renseigner le versionName de l'APK.
-const APP_VERSION = "1.2.0";
+const APP_VERSION = "1.3.0";
 
 const CHANGELOG = [
+  {
+    v: "1.3.0",
+    notes: [
+      "Version web installable (PWA) : sur iPhone, ouvrir le site dans Safari puis « Ajouter à l'écran d'accueil »",
+      "Fonctionne hors-ligne une fois chargée (pratique à la salle !)",
+      "Déploiement automatique sur GitHub Pages à chaque mise à jour",
+      "Icône de l'application",
+    ],
+  },
   {
     v: "1.2.0",
     notes: [

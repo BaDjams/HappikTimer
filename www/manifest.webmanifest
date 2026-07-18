@@ -1,0 +1,17 @@
+{
+  "name": "Happik Runner",
+  "short_name": "Happik Runner",
+  "description": "Courses chronométrées d'escalade pour les salles Hapik",
+  "lang": "fr",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#4b1d8f",
+  "theme_color": "#4b1d8f",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
