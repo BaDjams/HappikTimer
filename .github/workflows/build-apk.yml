@@ -27,6 +27,14 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
+      - name: Set APK version from www/version.js
+        run: |
+          VERSION=$(grep -oP 'const APP_VERSION = "\K[^"]+' www/version.js)
+          echo "APP_VERSION=$VERSION" >> "$GITHUB_ENV"
+          sed -i "s/versionName \".*\"/versionName \"$VERSION\"/" android/app/build.gradle
+          sed -i "s/versionCode .*/versionCode ${{ github.run_number }}/" android/app/build.gradle
+          echo "APK version: $VERSION (code ${{ github.run_number }})"
+
       - name: Build debug APK
         run: ./gradlew assembleDebug
         working-directory: android
@@ -45,6 +53,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
-          name: Happik Runner (dernière version)
+          name: Happik Runner v${{ env.APP_VERSION }}
+          body: "Version ${{ env.APP_VERSION }} — voir le changelog dans l'application (mode admin du classement)."
           files: happik-runner.apk
           prerelease: false

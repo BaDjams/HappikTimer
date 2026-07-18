@@ -16,10 +16,24 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // Clé de signature stable : indispensable pour que les mises à jour de l'APK
+    // s'installent par-dessus l'ancienne version sans perdre les données locales.
+    signingConfigs {
+        happik {
+            storeFile file('happik.keystore')
+            storePassword 'happikrunner'
+            keyAlias 'happik'
+            keyPassword 'happikrunner'
+        }
+    }
     buildTypes {
+        debug {
+            signingConfig signingConfigs.happik
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.happik
         }
     }
 }
