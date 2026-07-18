@@ -59,6 +59,7 @@ let routeTimes = [];      // secondes par piste
 let timerInterval = null;
 let lastRunId = null;
 let leaderboardOrigin = "home";
+let adminMode = false;
 
 // ---------- OUTILS ----------
 
@@ -161,6 +162,10 @@ function showRoute() {
     badge.textContent = "🎯 Objectif : jusqu'au marqueur";
     badge.className = "objective-badge marker";
   }
+  // réinitialise le bouton "je trouve pas"
+  document.getElementById("route-reveal").classList.add("hidden");
+  document.getElementById("btn-reveal").classList.remove("hidden");
+
   // relance l'animation de la carte indice
   const card = document.getElementById("clue-card");
   card.style.animation = "none";
@@ -177,6 +182,13 @@ function updateTimers() {
   const routeSec = (Date.now() - routeStart) / 1000;
   document.getElementById("route-timer").textContent = routeSec.toFixed(1);
   document.getElementById("run-total-timer").textContent = fmtTotal((Date.now() - runStart) / 1000);
+}
+
+function revealRoute() {
+  const reveal = document.getElementById("route-reveal");
+  reveal.textContent = "👉 C'est la piste « " + runRoutes[currentIndex].name + " » !";
+  reveal.classList.remove("hidden");
+  document.getElementById("btn-reveal").classList.add("hidden");
 }
 
 function routeDone() {
@@ -272,28 +284,59 @@ function finishRun() {
 
 function showLeaderboard(origin) {
   leaderboardOrigin = origin;
+  adminMode = false;
+  renderLeaderboard();
+  showScreen("screen-leaderboard");
+}
+
+function renderLeaderboard() {
   const lb = loadLeaderboard();
   const box = document.getElementById("leaderboard-list");
   box.innerHTML = "";
+  document.getElementById("btn-admin").classList.toggle("active", adminMode);
+  document.getElementById("admin-hint").classList.toggle("hidden", !adminMode);
 
   if (lb.length === 0) {
     box.innerHTML = '<p class="lb-empty">Aucune course pour le moment.<br>À toi de jouer ! 🧗</p>';
-  } else {
-    const medals = ["🥇", "🥈", "🥉"];
-    lb.slice(0, 20).forEach((e, i) => {
-      const row = document.createElement("div");
-      row.className = "lb-row" + (e.id === lastRunId ? " highlight" : "");
-      const d = new Date(e.date);
-      const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
-      row.innerHTML =
-        '<span class="lb-rank">' + (medals[i] || (i + 1)) + '</span>' +
-        '<span class="lb-info"><span class="lb-name">' + e.nickname + '</span>' +
-        '<br><span class="lb-date">' + dateStr + '</span></span>' +
-        '<span class="lb-time">' + fmtTotal(e.total) + '</span>';
-      box.appendChild(row);
-    });
+    return;
   }
-  showScreen("screen-leaderboard");
+
+  const medals = ["🥇", "🥈", "🥉"];
+  // en mode admin, on montre tout pour pouvoir nettoyer
+  const shown = adminMode ? lb : lb.slice(0, 20);
+  shown.forEach((e, i) => {
+    const row = document.createElement("div");
+    row.className = "lb-row" + (e.id === lastRunId ? " highlight" : "");
+    const d = new Date(e.date);
+    const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
+    row.innerHTML =
+      '<span class="lb-rank">' + (medals[i] || (i + 1)) + '</span>' +
+      '<span class="lb-info"><span class="lb-name">' + e.nickname + '</span>' +
+      '<br><span class="lb-date">' + dateStr + '</span></span>' +
+      '<span class="lb-time">' + fmtTotal(e.total) + '</span>';
+    if (adminMode) {
+      const del = document.createElement("button");
+      del.className = "lb-delete";
+      del.textContent = "🗑";
+      del.onclick = () => deleteEntry(e.id);
+      row.appendChild(del);
+    }
+    box.appendChild(row);
+  });
+}
+
+function toggleAdmin() {
+  adminMode = !adminMode;
+  renderLeaderboard();
+}
+
+function deleteEntry(id) {
+  const lb = loadLeaderboard();
+  const entry = lb.find(e => e.id === id);
+  if (!entry) return;
+  if (!confirm("Supprimer « " + entry.nickname + " — " + fmtTotal(entry.total) + " » du classement ?")) return;
+  saveLeaderboard(lb.filter(e => e.id !== id));
+  renderLeaderboard();
 }
 
 function leaderboardBack() {

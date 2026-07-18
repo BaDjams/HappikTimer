@@ -45,6 +45,8 @@
       <p class="clue-label">🔍 Indice</p>
       <p id="clue-text" class="clue-text"></p>
       <div id="objective-badge" class="objective-badge"></div>
+      <p id="route-reveal" class="route-reveal hidden"></p>
+      <button id="btn-reveal" class="btn-reveal" onclick="revealRoute()">🙈 Je trouve pas !</button>
     </div>
     <div id="route-timer" class="route-timer">0.0</div>
     <button id="btn-done" class="btn-tap-zone" onclick="routeDone()">
@@ -77,7 +79,11 @@
 
   <!-- ÉCRAN CLASSEMENT -->
   <div id="screen-leaderboard" class="screen scrollable">
-    <h2 class="screen-title">🏆 Classement</h2>
+    <div class="lb-header">
+      <h2 class="screen-title">🏆 Classement</h2>
+      <button id="btn-admin" class="btn-gear" onclick="toggleAdmin()" title="Mode admin">⚙️</button>
+    </div>
+    <p id="admin-hint" class="admin-hint hidden">Mode admin : touche 🗑 pour supprimer une ligne</p>
     <div id="leaderboard-list" class="leaderboard-list"></div>
     <button class="btn btn-ghost" id="btn-leaderboard-back" onclick="leaderboardBack()">← Retour</button>
   </div>
