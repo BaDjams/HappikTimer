@@ -1,6 +1,7 @@
 # 🧗 Happik Runner
 
-Application Android de course d'escalade pour les salles **Hapik** (pistes de Hapik SQY).
+Application de course d'escalade pour les salles **Hapik** (pistes de Hapik SQY).
+Disponible en **APK Android** et en **application web (PWA)** pour iPhone et tout navigateur.
 
 ## Le jeu
 
@@ -11,6 +12,17 @@ Application Android de course d'escalade pour les salles **Hapik** (pistes de Ha
    - 🚩 **jusqu'en haut** (2 pistes)
 4. Le chrono démarre dès que l'indice est révélé. L'enfant trouve la piste, grimpe jusqu'à l'objectif (sous la surveillance d'un adulte), puis revient **toucher l'écran**.
 5. À la fin, son temps total est inscrit au **classement** (surnom, temps, date), avec le détail du temps de chaque piste pour repérer celles qui posent problème.
+
+## Version web (iPhone, iPad, navigateur)
+
+L'application est déployée automatiquement sur GitHub Pages :
+
+**https://badjams.github.io/HappikTimer/**
+
+Sur iPhone : ouvrir le lien dans **Safari** → bouton Partager → **« Sur l'écran d'accueil »**.
+L'app s'installe comme une vraie application (plein écran, icône, fonctionne hors-ligne) et les
+scores sont conservés durablement. Chaque appareil a son propre classement : utiliser
+l'export/import JSON du mode admin (⚙️) pour transférer des scores entre appareils.
 
 ## Télécharger l'APK
 
