@@ -1,9 +1,19 @@
 // Version de l'application.
 // À chaque évolution : incrémenter APP_VERSION et ajouter une entrée en tête du CHANGELOG.
 // Le workflow GitHub Actions lit APP_VERSION pour renseigner le versionName de l'APK.
-const APP_VERSION = "1.3.0";
+const APP_VERSION = "1.4.0";
 
 const CHANGELOG = [
+  {
+    v: "1.4.0",
+    notes: [
+      "Menu d'activité : course solo ou Versus 1 contre 1",
+      "Mode Versus en écran partagé : mêmes 10 pistes dans un ordre différent, chacun son chrono et sa pause",
+      "Modes Enfant (règles actuelles), Adulte (tout jusqu'en haut) — Expert bientôt",
+      "Choix de la salle (Hapik SQY pour l'instant, d'autres pourront être ajoutées)",
+      "Le nombre de noms de pistes révélés (🙈) est compté dans les scores",
+    ],
+  },
   {
     v: "1.3.0",
     notes: [
