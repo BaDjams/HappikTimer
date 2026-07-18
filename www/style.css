@@ -206,6 +206,31 @@ body {
 .objective-badge.marker { background: #f07f12; }
 .objective-badge.top { background: #d92b7a; animation: pulse 1s infinite; }
 
+.hidden { display: none !important; }
+
+.btn-reveal {
+  display: block;
+  margin: 14px auto 0;
+  border: none;
+  border-radius: 12px;
+  background: rgba(75, 29, 143, 0.12);
+  color: #4b1d8f;
+  font-family: inherit;
+  font-size: 0.9rem;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.btn-reveal:active { background: rgba(75, 29, 143, 0.25); }
+
+.route-reveal {
+  margin-top: 14px;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #d92b7a;
+  animation: pop 0.4s;
+}
+
 .route-timer {
   font-size: 3.4rem;
   font-weight: bold;
@@ -330,3 +355,33 @@ body {
 }
 
 .lb-empty { opacity: 0.8; font-size: 1.1rem; padding: 30px 0; }
+
+.lb-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-gear {
+  border: none;
+  background: rgba(255,255,255,0.15);
+  border-radius: 12px;
+  font-size: 1.2rem;
+  padding: 8px 10px;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.btn-gear.active { opacity: 1; background: rgba(255,255,255,0.35); }
+
+.admin-hint { font-size: 0.9rem; opacity: 0.85; }
+
+.lb-delete {
+  border: none;
+  background: rgba(217, 43, 43, 0.75);
+  color: #fff;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  padding: 8px 10px;
+  cursor: pointer;
+}
