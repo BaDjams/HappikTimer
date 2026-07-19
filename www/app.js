@@ -1,8 +1,9 @@
 // ---------- DONNÉES ----------
 
-// Salles disponibles. Pour ajouter une salle : dupliquer l'objet avec ses pistes et indices.
+// Packs d'épreuves disponibles. Pour en ajouter un : dupliquer l'objet avec ses épreuves
+// et indices (escalade, parcours d'obstacles, défis en plein air...).
 // noMarker: pas de marqueur sur la piste => objectif forcément "jusqu'en haut"
-const SITES = [
+const PACKS = [
   {
     id: "sqy",
     name: "Hapik SQY",
@@ -56,14 +57,15 @@ const ADJECTIVES = [
 
 const NB_ROUTES = 10;
 const NB_TOP = 2;
+// clés de stockage historiques, conservées pour ne pas perdre les données des anciennes versions
 const LB_KEY = "happik-leaderboard";
-const SITE_KEY = "happik-site";
+const PACK_KEY = "happik-site";
 const ENCOURAGEMENTS = ["Bravo !", "Super !", "Génial !", "Quelle fusée !", "Incroyable !", "Continue comme ça !", "Trop fort !", "Wahou !"];
 const EMOJIS = ["🎉", "⭐", "🔥", "💪", "🚀", "🤩", "👏", "🏅"];
 
 // ---------- ÉTAT ----------
 
-let currentSiteId = localStorage.getItem(SITE_KEY) || "sqy";
+let currentPackId = localStorage.getItem(PACK_KEY) || "sqy";
 let activity = "solo";        // "solo" | "versus"
 let selectedMode = "enfant";  // mode en cours de sélection à la création du personnage
 let playerMode = "enfant";    // mode du joueur solo
@@ -117,32 +119,32 @@ function showScreen(id) {
   document.getElementById(id).classList.add("active");
 }
 
-function getSite() {
-  return SITES.find(s => s.id === currentSiteId) || SITES[0];
+function getPack() {
+  return PACKS.find(p => p.id === currentPackId) || PACKS[0];
 }
 
-// ---------- SALLE ----------
+// ---------- PACK D'ÉPREUVES ----------
 
-function openSitePicker() {
-  const box = document.getElementById("site-list");
+function openPackPicker() {
+  const box = document.getElementById("pack-list");
   box.innerHTML = "";
-  SITES.forEach(s => {
+  PACKS.forEach(p => {
     const btn = document.createElement("button");
-    btn.className = "site-btn" + (s.id === currentSiteId ? " selected" : "");
-    btn.textContent = "📍 " + s.name + (s.id === currentSiteId ? "  ✓" : "");
+    btn.className = "site-btn" + (p.id === currentPackId ? " selected" : "");
+    btn.textContent = "🎒 " + p.name + (p.id === currentPackId ? "  ✓" : "");
     btn.onclick = () => {
-      currentSiteId = s.id;
-      localStorage.setItem(SITE_KEY, s.id);
-      updateSiteLabel();
+      currentPackId = p.id;
+      localStorage.setItem(PACK_KEY, p.id);
+      updatePackLabel();
       showScreen("screen-home");
     };
     box.appendChild(btn);
   });
-  showScreen("screen-site");
+  showScreen("screen-pack");
 }
 
-function updateSiteLabel() {
-  document.getElementById("site-label").textContent = "📍 " + getSite().name;
+function updatePackLabel() {
+  document.getElementById("pack-label").textContent = "🎒 " + getPack().name;
 }
 
 // ---------- CRÉATION DU PERSONNAGE ----------
@@ -226,7 +228,7 @@ function pickNickname(name) {
 // ---------- COURSE SOLO ----------
 
 function buildRun(mode) {
-  const selected = shuffle(getSite().routes).slice(0, NB_ROUTES);
+  const selected = shuffle(getPack().routes).slice(0, NB_ROUTES);
   let topSet;
   if (mode === "adulte") {
     topSet = new Set(selected.map(r => r.name));
@@ -372,7 +374,7 @@ function finishRun() {
     id: Date.now(),
     nickname,
     mode: playerMode,
-    site: currentSiteId,
+    pack: currentPackId,
     total,
     reveals: revealsCount,
     date: new Date().toISOString(),
@@ -387,11 +389,11 @@ function finishRun() {
   document.getElementById("result-nickname").textContent = nickname;
   document.getElementById("result-mode").textContent = MODES[playerMode].emoji + " " + MODES[playerMode].label;
   document.getElementById("result-total").textContent = fmtTotal(total) + " min";
-  const siteLb = lb.filter(e => (e.site || "sqy") === currentSiteId);
-  const rank = siteLb.findIndex(e => e.id === entry.id) + 1;
+  const packLb = lb.filter(e => (e.pack || e.site || "sqy") === currentPackId);
+  const rank = packLb.findIndex(e => e.id === entry.id) + 1;
   const rankMsg = rank === 1
     ? "🥇 MEILLEUR TEMPS ! Tu es 1er du classement !"
-    : "Tu es " + rank + "e sur " + siteLb.length + " au classement !";
+    : "Tu es " + rank + "e sur " + packLb.length + " au classement !";
   document.getElementById("result-rank").textContent = rankMsg;
   document.getElementById("result-reveals").textContent = revealsCount > 0
     ? "🙈 Nom de piste révélé " + revealsCount + " fois"
@@ -628,10 +630,11 @@ function showLeaderboard(origin) {
 }
 
 function renderLeaderboard() {
-  const lb = loadLeaderboard().filter(e => (e.site || "sqy") === currentSiteId);
+  // e.site : champ des anciennes versions, conservé pour compatibilité
+  const lb = loadLeaderboard().filter(e => (e.pack || e.site || "sqy") === currentPackId);
   const box = document.getElementById("leaderboard-list");
   box.innerHTML = "";
-  document.getElementById("lb-site").textContent = "📍 " + getSite().name;
+  document.getElementById("lb-pack").textContent = "🎒 Pack " + getPack().name;
   document.getElementById("btn-admin").classList.toggle("active", adminMode);
   document.getElementById("admin-hint").classList.toggle("hidden", !adminMode);
   document.getElementById("admin-tools").classList.toggle("hidden", !adminMode);
@@ -711,13 +714,13 @@ function closeModal() {
 
 function exportLeaderboard() {
   const data = {
-    app: "happik-runner",
+    app: "happy-time",
     version: APP_VERSION,
     exported: new Date().toISOString(),
     leaderboard: loadLeaderboard(),
   };
   const json = JSON.stringify(data, null, 2);
-  const fname = "happik-scores-" + new Date().toISOString().slice(0, 10) + ".json";
+  const fname = "happy-time-scores-" + new Date().toISOString().slice(0, 10) + ".json";
 
   const actions = [
     { label: "📋 Copier", cls: "btn-blue", readonly: true, fn: () => copyExport(json) },
@@ -810,4 +813,4 @@ function renderVersionInfo() {
 }
 
 renderVersionInfo();
-updateSiteLabel();
+updatePackLabel();

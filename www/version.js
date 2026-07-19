@@ -1,9 +1,17 @@
 // Version de l'application.
 // À chaque évolution : incrémenter APP_VERSION et ajouter une entrée en tête du CHANGELOG.
 // Le workflow GitHub Actions lit APP_VERSION pour renseigner le versionName de l'APK.
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.5.0";
 
 const CHANGELOG = [
+  {
+    v: "1.5.0",
+    notes: [
+      "L'application s'appelle maintenant Happy Time !",
+      "Nouveau logo, plus simple",
+      "Les salles deviennent des « packs d'épreuves » : escalade aujourd'hui, n'importe quel défi chronométré demain",
+    ],
+  },
   {
     v: "1.4.0",
     notes: [

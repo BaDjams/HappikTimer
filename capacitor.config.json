@@ -1,6 +1,6 @@
 {
   "appId": "fr.happik.runner",
-  "appName": "Happik Runner",
+  "appName": "Happy Time",
   "webDir": "www",
   "android": {
     "backgroundColor": "#4b1d8f"

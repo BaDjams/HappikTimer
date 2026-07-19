@@ -1,7 +1,7 @@
 {
-  "name": "Happik Runner",
-  "short_name": "Happik Runner",
-  "description": "Courses chronométrées d'escalade pour les salles Hapik",
+  "name": "Happy Time",
+  "short_name": "Happy Time",
+  "description": "Défis chronométrés par packs d'épreuves : courses solo et duels 1 contre 1",
   "lang": "fr",
   "start_url": ".",
   "scope": ".",

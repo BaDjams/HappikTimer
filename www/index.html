@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Happik Runner</title>
+  <title>Happy Time</title>
   <meta name="theme-color" content="#4b1d8f">
   <link rel="manifest" href="manifest.webmanifest">
   <!-- PWA iOS : plein écran quand l'app est ajoutée à l'écran d'accueil -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Happik Runner">
+  <meta name="apple-mobile-web-app-title" content="Happy Time">
   <link rel="apple-touch-icon" href="icons/icon-180.png">
   <link rel="icon" type="image/png" href="icons/icon-192.png">
   <link rel="stylesheet" href="style.css">
@@ -20,19 +20,19 @@
   <!-- ÉCRAN ACCUEIL -->
   <div id="screen-home" class="screen active">
     <div class="stars-bg"></div>
-    <h1 class="app-title"><span class="bounce">🧗</span> Happik<br>Runner</h1>
+    <h1 class="app-title"><span class="bounce">⏱</span> Happy<br>Time</h1>
     <p class="subtitle">Quelle activité souhaites-tu faire ?</p>
     <button class="btn btn-big btn-green" onclick="chooseActivity('solo')">🚀 Course solo</button>
     <button class="btn btn-big btn-blue" onclick="chooseActivity('versus')">⚔️ Versus 1 contre 1</button>
     <button class="btn btn-purple" onclick="showLeaderboard('home')">🏆 Classement</button>
-    <button id="site-label" class="btn btn-ghost btn-small" onclick="openSitePicker()">📍 Hapik SQY</button>
+    <button id="pack-label" class="btn btn-ghost btn-small" onclick="openPackPicker()">🎒 Pack d'épreuves</button>
   </div>
 
-  <!-- ÉCRAN CHOIX DE LA SALLE -->
-  <div id="screen-site" class="screen">
-    <h2 class="screen-title">📍 Choisis ta salle</h2>
-    <div id="site-list" class="site-list"></div>
-    <p class="site-hint">D'autres salles Hapik pourront être ajoutées ici bientôt !</p>
+  <!-- ÉCRAN CHOIX DU PACK D'ÉPREUVES -->
+  <div id="screen-pack" class="screen">
+    <h2 class="screen-title">🎒 Choisis ton pack d'épreuves</h2>
+    <div id="pack-list" class="site-list"></div>
+    <p class="site-hint">D'autres packs arriveront : escalade, parcours d'obstacles, défis en plein air... 😉</p>
     <button class="btn btn-ghost" onclick="showScreen('screen-home')">← Retour</button>
   </div>
 
@@ -208,14 +208,14 @@
       <h2 class="screen-title">🏆 Classement</h2>
       <button id="btn-admin" class="btn-gear" onclick="toggleAdmin()" title="Mode admin">⚙️</button>
     </div>
-    <p id="lb-site" class="lb-site"></p>
+    <p id="lb-pack" class="lb-site"></p>
     <p id="admin-hint" class="admin-hint hidden">Mode admin : touche 🗑 pour supprimer une ligne</p>
     <div id="admin-tools" class="admin-tools hidden">
       <div class="admin-buttons">
         <button class="btn btn-blue btn-small" onclick="exportLeaderboard()">📤 Exporter les scores</button>
         <button class="btn btn-orange btn-small" onclick="openImport()">📥 Importer</button>
       </div>
-      <p class="version-line">Happik Runner <strong>v<span id="version-num"></span></strong></p>
+      <p class="version-line">Happy Time <strong>v<span id="version-num"></span></strong></p>
       <div id="changelog" class="changelog"></div>
     </div>
     <div id="leaderboard-list" class="leaderboard-list"></div>

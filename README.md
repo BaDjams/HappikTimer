@@ -1,17 +1,25 @@
-# 🧗 Happik Runner
+# ⏱ Happy Time
 
-Application de course d'escalade pour les salles **Hapik** (pistes de Hapik SQY).
+Des défis chronométrés, seul ou à deux, organisés en **packs d'épreuves**.
 Disponible en **APK Android** et en **application web (PWA)** pour iPhone et tout navigateur.
+
+Le premier pack disponible est un pack d'escalade (pistes de la salle Hapik SQY), mais le
+concept est ouvert : un pack peut contenir n'importe quelle série d'épreuves à faire au
+chrono — parcours d'obstacles, défis en plein air, chasse au trésor... À terme, l'idée est
+de permettre à une communauté de créer et partager ses propres packs.
 
 ## Le jeu
 
-1. L'enfant choisit un **surnom** rigolo (animal + adjectif : « Caribou vif », « Fourmi balèze »...).
-2. Il appuie sur **Démarrer le parcours** : l'app génère **10 pistes** au hasard.
-3. Pour chaque piste, un **indice** s'affiche (« La grande tornade rouge... » → Vortex) avec un objectif :
-   - 🎯 **jusqu'au marqueur** (8 pistes)
-   - 🚩 **jusqu'en haut** (2 pistes)
-4. Le chrono démarre dès que l'indice est révélé. L'enfant trouve la piste, grimpe jusqu'à l'objectif (sous la surveillance d'un adulte), puis revient **toucher l'écran**.
-5. À la fin, son temps total est inscrit au **classement** (surnom, temps, date), avec le détail du temps de chaque piste pour repérer celles qui posent problème.
+1. Choisis ton **pack d'épreuves** (🎒 en bas de l'accueil).
+2. Choisis ton activité : **course solo** ou **Versus 1 contre 1** (écran partagé, chacun son chrono).
+3. Crée ton personnage : un **surnom** rigolo (animal + adjectif) et un **mode** :
+   - 🐣 **Enfant** : 2 épreuves « jusqu'en haut », le reste « jusqu'au marqueur »
+   - 💪 **Adulte** : tout « jusqu'en haut »
+   - 🤘 **Expert** : bientôt !
+4. Pour chaque épreuve, un **indice** s'affiche. Le chrono tourne : trouve l'épreuve,
+   accomplis l'objectif, puis reviens **toucher l'écran**. Bouton 🙈 « Je trouve pas ! » si
+   besoin (c'est compté !), pause ⏸ possible.
+5. À la fin : temps total au **classement** (par pack), détail épreuve par épreuve.
 
 ## Version web (iPhone, iPad, navigateur)
 
@@ -28,10 +36,10 @@ l'export/import JSON du mode admin (⚙️) pour transférer des scores entre ap
 
 L'APK est compilé automatiquement par GitHub Actions :
 
-- Onglet **Actions** → dernier run **Build APK** → artifact `happik-runner-apk`
+- Onglet **Actions** → dernier run **Build APK** → artifact `happy-time-apk`
 - Ou dans **Releases** (pour les builds de la branche `main`)
 
-Sur le téléphone : autoriser l'installation d'applications de sources inconnues, puis ouvrir `happik-runner.apk`.
+Sur le téléphone : autoriser l'installation d'applications de sources inconnues, puis ouvrir `happy-time.apk`.
 
 ## Développement
 
@@ -44,3 +52,5 @@ cd android && ./gradlew assembleDebug
 ```
 
 Le classement est stocké localement sur l'appareil (localStorage).
+Pour ajouter un pack d'épreuves : un objet dans `PACKS` (`www/app.js`) avec un id, un nom
+et la liste des épreuves (nom + indice).
