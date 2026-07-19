@@ -2,7 +2,7 @@
 // Le nom du cache dépend de APP_VERSION : chaque nouvelle version remplace l'ancienne.
 importScripts("version.js");
 
-const CACHE = "happik-runner-" + APP_VERSION;
+const CACHE = "happy-time-" + APP_VERSION;
 const ASSETS = [
   "./",
   "index.html",
@@ -10,6 +10,8 @@ const ASSETS = [
   "app.js",
   "version.js",
   "manifest.webmanifest",
+  "packs/index.json",
+  "packs/sqy.json",
   "icons/icon-192.png",
   "icons/icon-512.png",
   "icons/icon-180.png",

@@ -523,9 +523,11 @@ body {
 /* ---------- Modes (création du personnage) ---------- */
 
 .mode-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
-  justify-content: center;
+  width: 100%;
+  max-width: 320px;
 }
 
 .mode-chip {
@@ -563,6 +565,29 @@ body {
 .mode-badge-inline { font-size: 1rem; opacity: 0.9; }
 
 .reveals-text { font-size: 1rem; opacity: 0.9; }
+
+.points-text { font-size: 1.15rem; font-weight: bold; color: #ffd54f; }
+
+/* contrainte expert : prises imposées */
+.expert-badge {
+  display: inline-block;
+  background: #222;
+  color: #ffd54f;
+  border-radius: 12px;
+  padding: 5px 14px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.vs-var {
+  background: #222;
+  color: #ffd54f;
+  border-radius: 10px;
+  padding: 3px 10px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
 
 .lb-site { font-size: 0.95rem; opacity: 0.85; }
 

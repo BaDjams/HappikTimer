@@ -1,7 +1,7 @@
 {
-  "name": "happik-runner",
+  "name": "happy-time",
   "version": "1.0.0",
-  "description": "Application de course d'escalade pour les salles Hapik",
+  "description": "Happy Time : défis chronométrés par packs d'épreuves",
   "private": true,
   "scripts": {
     "sync": "cap sync android"

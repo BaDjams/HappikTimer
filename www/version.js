@@ -1,9 +1,31 @@
 // Version de l'application.
 // À chaque évolution : incrémenter APP_VERSION et ajouter une entrée en tête du CHANGELOG.
 // Le workflow GitHub Actions lit APP_VERSION pour renseigner le versionName de l'APK.
-const APP_VERSION = "1.4.0";
+const APP_VERSION = "1.7.0";
 
 const CHANGELOG = [
+  {
+    v: "1.7.0",
+    notes: [
+      "4 niveaux de difficulté : Facile 🐣 (2 pistes en haut), Normal 💪 (tout en haut), Difficile 🔥 (prises imposées intermédiaires) et Expert 🤘 (les plus dures)",
+    ],
+  },
+  {
+    v: "1.6.0",
+    notes: [
+      "Mode Expert débloqué : les prises imposées des vraies pancartes de la salle, avec des points à gagner sur chaque piste",
+      "Les packs d'épreuves sont maintenant des fichiers séparés (packs/*.json), prêts à être partagés",
+      "Nouvelles pistes : Face to Face et Dièdre ; « Cubes » retrouve son vrai nom « Kubrik »",
+    ],
+  },
+  {
+    v: "1.5.0",
+    notes: [
+      "L'application s'appelle maintenant Happy Time !",
+      "Nouveau logo, plus simple",
+      "Les salles deviennent des « packs d'épreuves » : escalade aujourd'hui, n'importe quel défi chronométré demain",
+    ],
+  },
   {
     v: "1.4.0",
     notes: [

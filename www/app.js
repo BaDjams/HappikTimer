@@ -1,38 +1,48 @@
 // ---------- DONNÉES ----------
 
-// Salles disponibles. Pour ajouter une salle : dupliquer l'objet avec ses pistes et indices.
+// Packs d'épreuves : chargés depuis les fichiers www/packs/*.json (liste dans packs/index.json).
+// Un pack = { id, name, routes: [{ name, clue, noMarker?, variants? }] }
 // noMarker: pas de marqueur sur la piste => objectif forcément "jusqu'en haut"
-const SITES = [
-  {
-    id: "sqy",
-    name: "Hapik SQY",
-    routes: [
-      { name: "Chevrons",        clue: "Suis les flèches qui pointent vers le ciel !" },
-      { name: "Champions",       clue: "Le mur des footballeurs, à toi de marquer un but ! ⚽" },
-      { name: "Vortex",          clue: "La grande tornade rouge qui tourbillonne ! 🌪" },
-      { name: "Jeux Olympiques", clue: "Les anneaux des plus grands champions du monde ! 🥇" },
-      { name: "Sprint",          clue: "La piste de vitesse, la plus haute de toutes ! ⚡" },
-      { name: "Réseaux",         clue: "Le mur connecté, comme Internet ! 🌐" },
-      { name: "Tourbillon Sud",  clue: "Un tourbillon venu tout droit du sud... 🧭" },
-      { name: "Bambou",          clue: "La plante préférée des pandas ! 🐼", noMarker: true },
-      { name: "Casse-tête",      clue: "Le mur qui fait chauffer le cerveau ! 🧩" },
-      { name: "Hapik",           clue: "Le mur qui porte le nom de la salle !" },
-      { name: "Cubes",           clue: "Des carrés, des blocs... empilés partout ! 🟦" },
-      { name: "Rando",           clue: "Accroche-toi aux cordes suspendues ! 🪢" },
-      { name: "Piolet",          clue: "L'outil pointu des alpinistes sur la glace ! ⛏" },
-      { name: "Geek",            clue: "Des chiffres verts comme dans un ordinateur ! 👾" },
-      { name: "Géoloco",         clue: "Où es-tu ? Le mur du GPS te guide ! 📍" },
-      { name: "Shining",         clue: "Le mur qui brille de mille diamants ! 💎" },
-      { name: "Constellations",  clue: "Les étoiles dessinées dans le ciel ! ✨" },
-    ],
-  },
-];
+// variants: déclinaisons de difficulté (prises imposées), triées du plus dur au plus facile,
+//           utilisées par le mode Expert : [{ pts, txt }]
+let PACKS = [];
+
+async function loadPacks() {
+  try {
+    const idx = await fetch("packs/index.json").then(r => r.json());
+    PACKS = await Promise.all(idx.map(f => fetch("packs/" + f).then(r => r.json())));
+  } catch (e) {
+    alert("Impossible de charger les packs d'épreuves. Relance l'application !");
+    PACKS = [];
+  }
+  updatePackLabel();
+}
 
 const MODES = {
-  enfant: { emoji: "🐣", label: "Enfant", desc: "2 pistes jusqu'en haut, le reste jusqu'au marqueur" },
-  adulte: { emoji: "💪", label: "Adulte", desc: "toutes les pistes jusqu'en haut !" },
-  expert: { emoji: "🤘", label: "Expert", desc: "bientôt disponible...", disabled: true },
+  facile:    { emoji: "🐣", label: "Facile",    desc: "2 pistes jusqu'en haut, le reste jusqu'au marqueur" },
+  normal:    { emoji: "💪", label: "Normal",    desc: "toutes les pistes jusqu'en haut !" },
+  difficile: { emoji: "🔥", label: "Difficile", desc: "prises imposées (niveau intermédiaire), des points à gagner" },
+  expert:    { emoji: "🤘", label: "Expert",    desc: "les prises les plus dures, un max de points !" },
 };
+
+// les scores des anciennes versions utilisaient "enfant" et "adulte"
+function modeInfo(m) {
+  const key = { enfant: "facile", adulte: "normal" }[m] || m;
+  return MODES[key] || MODES.facile;
+}
+
+// modes avec prises imposées (déclinaisons des pancartes) et points
+function isConstraintMode(m) {
+  return m === "difficile" || m === "expert";
+}
+
+// déclinaison à appliquer selon le mode : expert = la plus dure (1re),
+// difficile = l'intermédiaire (2e, ou la dernière s'il n'y en a que deux)
+function pickVariant(mode, variants) {
+  if (!variants || !isConstraintMode(mode)) return null;
+  if (mode === "expert") return variants[0];
+  return variants[1] || variants[variants.length - 1];
+}
 
 const ANIMALS = [
   { n: "Caribou", f: false }, { n: "Fourmi", f: true },  { n: "Panda", f: false },
@@ -56,17 +66,18 @@ const ADJECTIVES = [
 
 const NB_ROUTES = 10;
 const NB_TOP = 2;
+// clés de stockage historiques, conservées pour ne pas perdre les données des anciennes versions
 const LB_KEY = "happik-leaderboard";
-const SITE_KEY = "happik-site";
+const PACK_KEY = "happik-site";
 const ENCOURAGEMENTS = ["Bravo !", "Super !", "Génial !", "Quelle fusée !", "Incroyable !", "Continue comme ça !", "Trop fort !", "Wahou !"];
 const EMOJIS = ["🎉", "⭐", "🔥", "💪", "🚀", "🤩", "👏", "🏅"];
 
 // ---------- ÉTAT ----------
 
-let currentSiteId = localStorage.getItem(SITE_KEY) || "sqy";
+let currentPackId = localStorage.getItem(PACK_KEY) || "sqy";
 let activity = "solo";        // "solo" | "versus"
-let selectedMode = "enfant";  // mode en cours de sélection à la création du personnage
-let playerMode = "enfant";    // mode du joueur solo
+let selectedMode = "facile";  // mode en cours de sélection à la création du personnage
+let playerMode = "facile";    // mode du joueur solo
 let nickname = "";
 let vsSetup = [];             // joueurs du duel en cours de création [{nickname, mode}]
 
@@ -117,32 +128,33 @@ function showScreen(id) {
   document.getElementById(id).classList.add("active");
 }
 
-function getSite() {
-  return SITES.find(s => s.id === currentSiteId) || SITES[0];
+function getPack() {
+  return PACKS.find(p => p.id === currentPackId) || PACKS[0]
+    || { id: "?", name: "chargement...", routes: [] };
 }
 
-// ---------- SALLE ----------
+// ---------- PACK D'ÉPREUVES ----------
 
-function openSitePicker() {
-  const box = document.getElementById("site-list");
+function openPackPicker() {
+  const box = document.getElementById("pack-list");
   box.innerHTML = "";
-  SITES.forEach(s => {
+  PACKS.forEach(p => {
     const btn = document.createElement("button");
-    btn.className = "site-btn" + (s.id === currentSiteId ? " selected" : "");
-    btn.textContent = "📍 " + s.name + (s.id === currentSiteId ? "  ✓" : "");
+    btn.className = "site-btn" + (p.id === currentPackId ? " selected" : "");
+    btn.textContent = "🎒 " + p.name + (p.id === currentPackId ? "  ✓" : "");
     btn.onclick = () => {
-      currentSiteId = s.id;
-      localStorage.setItem(SITE_KEY, s.id);
-      updateSiteLabel();
+      currentPackId = p.id;
+      localStorage.setItem(PACK_KEY, p.id);
+      updatePackLabel();
       showScreen("screen-home");
     };
     box.appendChild(btn);
   });
-  showScreen("screen-site");
+  showScreen("screen-pack");
 }
 
-function updateSiteLabel() {
-  document.getElementById("site-label").textContent = "📍 " + getSite().name;
+function updatePackLabel() {
+  document.getElementById("pack-label").textContent = "🎒 " + getPack().name;
 }
 
 // ---------- CRÉATION DU PERSONNAGE ----------
@@ -154,13 +166,17 @@ function makeNickname() {
 }
 
 function chooseActivity(a) {
+  if (getPack().routes.length < NB_ROUTES) {
+    alert("Le pack d'épreuves n'est pas encore chargé, réessaie dans une seconde !");
+    return;
+  }
   activity = a;
   vsSetup = [];
   goToNickname();
 }
 
 function goToNickname() {
-  selectedMode = "enfant";
+  selectedMode = "facile";
   updateModeChips();
   updateNicknameTitle();
   rollNicknames();
@@ -204,7 +220,7 @@ function pickNickname(name) {
   if (activity === "versus") {
     vsSetup.push({ nickname: name, mode: selectedMode });
     if (vsSetup.length < 2) {
-      selectedMode = "enfant";
+      selectedMode = "facile";
       updateModeChips();
       updateNicknameTitle();
       rollNicknames();
@@ -216,9 +232,9 @@ function pickNickname(name) {
   nickname = name;
   playerMode = selectedMode;
   document.getElementById("ready-nickname").textContent = nickname;
-  document.getElementById("ready-mode").textContent = MODES[playerMode].emoji + " Mode " + MODES[playerMode].label;
+  document.getElementById("ready-mode").textContent = modeInfo(playerMode).emoji + " Mode " + modeInfo(playerMode).label;
   document.getElementById("ready-explain").innerHTML =
-    "Tu vas faire <strong>10 pistes</strong> (" + MODES[playerMode].desc + ").<br>" +
+    "Tu vas faire <strong>10 pistes</strong> (" + modeInfo(playerMode).desc + ").<br>" +
     "À chaque indice, trouve la bonne piste,<br>grimpe jusqu'à l'objectif,<br>puis reviens toucher l'écran ! 🏃💨";
   showScreen("screen-ready");
 }
@@ -226,11 +242,9 @@ function pickNickname(name) {
 // ---------- COURSE SOLO ----------
 
 function buildRun(mode) {
-  const selected = shuffle(getSite().routes).slice(0, NB_ROUTES);
+  const selected = shuffle(getPack().routes).slice(0, NB_ROUTES);
   let topSet;
-  if (mode === "adulte") {
-    topSet = new Set(selected.map(r => r.name));
-  } else {
+  if (mode === "facile") {
     // Choix des pistes "jusqu'en haut" : celles sans marqueur d'abord (obligatoire)
     const noMarker = selected.filter(r => r.noMarker);
     const withMarker = shuffle(selected.filter(r => !r.noMarker));
@@ -239,12 +253,24 @@ function buildRun(mode) {
       if (topSet.size >= NB_TOP) break;
       topSet.add(r.name);
     }
+  } else {
+    // normal, difficile et expert : tout jusqu'en haut
+    topSet = new Set(selected.map(r => r.name));
   }
   return selected.map(r => ({
     name: r.name,
     clue: r.clue,
     top: topSet.has(r.name),
+    // difficile/expert : déclinaison de la pancarte (prises imposées)
+    variant: pickVariant(mode, r.variants),
+    // conservé pour que le versus puisse appliquer le mode de chaque joueur
+    variants: r.variants || null,
   }));
+}
+
+// points gagnés sur une piste en mode expert (1 point si la piste n'a pas de déclinaison)
+function routePoints(route) {
+  return route.variant ? route.variant.pts : 1;
 }
 
 function startRun() {
@@ -270,6 +296,19 @@ function showRoute() {
     badge.textContent = "🎯 Objectif : jusqu'au marqueur";
     badge.className = "objective-badge marker";
   }
+  // contrainte difficile/expert (prises imposées)
+  const expertBadge = document.getElementById("expert-badge");
+  const modeEmoji = modeInfo(playerMode).emoji;
+  if (route.variant) {
+    expertBadge.textContent = modeEmoji + " " + route.variant.pts + " pts : " + route.variant.txt;
+    expertBadge.classList.remove("hidden");
+  } else if (isConstraintMode(playerMode)) {
+    expertBadge.textContent = modeEmoji + " 1 pt : toutes les prises";
+    expertBadge.classList.remove("hidden");
+  } else {
+    expertBadge.classList.add("hidden");
+  }
+
   // réinitialise le bouton "je trouve pas"
   revealedThisRoute = false;
   document.getElementById("route-reveal").classList.add("hidden");
@@ -368,15 +407,20 @@ function saveLeaderboard(lb) {
 
 function finishRun() {
   const total = routeTimes.reduce((a, b) => a + b, 0);
+  const points = isConstraintMode(playerMode) ? runRoutes.reduce((s, r) => s + routePoints(r), 0) : 0;
   const entry = {
     id: Date.now(),
     nickname,
     mode: playerMode,
-    site: currentSiteId,
+    pack: currentPackId,
     total,
     reveals: revealsCount,
+    points,
     date: new Date().toISOString(),
-    routes: runRoutes.map((r, i) => ({ name: r.name, top: r.top, time: routeTimes[i], revealed: revealedFlags[i] })),
+    routes: runRoutes.map((r, i) => ({
+      name: r.name, top: r.top, time: routeTimes[i], revealed: revealedFlags[i],
+      variant: r.variant || undefined,
+    })),
   };
   lastRunId = entry.id;
   const lb = loadLeaderboard();
@@ -385,17 +429,24 @@ function finishRun() {
   saveLeaderboard(lb);
 
   document.getElementById("result-nickname").textContent = nickname;
-  document.getElementById("result-mode").textContent = MODES[playerMode].emoji + " " + MODES[playerMode].label;
+  document.getElementById("result-mode").textContent = modeInfo(playerMode).emoji + " " + modeInfo(playerMode).label;
   document.getElementById("result-total").textContent = fmtTotal(total) + " min";
-  const siteLb = lb.filter(e => (e.site || "sqy") === currentSiteId);
-  const rank = siteLb.findIndex(e => e.id === entry.id) + 1;
+  const packLb = lb.filter(e => (e.pack || e.site || "sqy") === currentPackId);
+  const rank = packLb.findIndex(e => e.id === entry.id) + 1;
   const rankMsg = rank === 1
     ? "🥇 MEILLEUR TEMPS ! Tu es 1er du classement !"
-    : "Tu es " + rank + "e sur " + siteLb.length + " au classement !";
+    : "Tu es " + rank + "e sur " + packLb.length + " au classement !";
   document.getElementById("result-rank").textContent = rankMsg;
   document.getElementById("result-reveals").textContent = revealsCount > 0
     ? "🙈 Nom de piste révélé " + revealsCount + " fois"
     : "🧠 Aucun nom révélé, bravo !";
+  const ptsLine = document.getElementById("result-points");
+  if (points > 0) {
+    ptsLine.textContent = modeInfo(playerMode).emoji + " " + points + " points gagnés !";
+    ptsLine.classList.remove("hidden");
+  } else {
+    ptsLine.classList.add("hidden");
+  }
 
   const box = document.getElementById("result-details");
   box.innerHTML = "";
@@ -408,10 +459,11 @@ function finishRun() {
       if (r.time === max) row.classList.add("slowest");
       else if (r.time === min) row.classList.add("fastest");
     }
+    const variantLine = r.variant ? '<br><span class="detail-obj">' + modeInfo(playerMode).emoji + ' ' + r.variant.pts + ' pts : ' + r.variant.txt + '</span>' : "";
     row.innerHTML =
       '<span class="detail-num">' + (i + 1) + '</span>' +
       '<span class="detail-name">' + r.name + (r.revealed ? " 🙈" : "") +
-      '<br><span class="detail-obj">' + (r.top ? "🚩 jusqu'en haut" : "🎯 jusqu'au marqueur") + '</span></span>' +
+      '<br><span class="detail-obj">' + (r.top ? "🚩 jusqu'en haut" : "🎯 jusqu'au marqueur") + '</span>' + variantLine + '</span>' +
       '<span class="detail-time">' + fmtRoute(r.time) + '</span>';
     box.appendChild(row);
   });
@@ -425,7 +477,7 @@ function showVsReady() {
   [0, 1].forEach(i => {
     document.getElementById("vs-ready-name-" + i).textContent = vsSetup[i].nickname;
     document.getElementById("vs-ready-mode-" + i).textContent =
-      MODES[vsSetup[i].mode].emoji + " " + MODES[vsSetup[i].mode].label;
+      modeInfo(vsSetup[i].mode).emoji + " " + modeInfo(vsSetup[i].mode).label;
   });
   showScreen("screen-vs-ready");
 }
@@ -439,11 +491,16 @@ function startVersus() {
     players: vsSetup.map(p => ({
       nickname: p.nickname,
       mode: p.mode,
-      routes: shuffle(base).map(r => ({ ...r, top: p.mode === "adulte" ? true : r.top })),
+      routes: shuffle(base).map(r => ({
+        ...r,
+        top: p.mode === "facile" ? r.top : true,
+        variant: pickVariant(p.mode, r.variants),
+      })),
       idx: 0,
       times: [],
       revealed: [],
       reveals: 0,
+      points: 0,
       routeStart: 0,
       paused: false,
       pausedAt: 0,
@@ -500,6 +557,17 @@ function vsShowRoute(i) {
     obj.textContent = "🎯 jusqu'au marqueur";
     obj.className = "vs-obj marker";
   }
+  const variant = document.getElementById("vs-var-" + i);
+  const pEmoji = modeInfo(p.mode).emoji;
+  if (r.variant) {
+    variant.textContent = pEmoji + " " + r.variant.pts + " pts : " + r.variant.txt;
+    variant.classList.remove("hidden");
+  } else if (isConstraintMode(p.mode)) {
+    variant.textContent = pEmoji + " 1 pt : toutes les prises";
+    variant.classList.remove("hidden");
+  } else {
+    variant.classList.add("hidden");
+  }
   p.revealedThisRoute = false;
   document.getElementById("vs-reveal-" + i).disabled = false;
   p.routeStart = Date.now();
@@ -517,6 +585,7 @@ function vsDone(i) {
   if (p.done || p.paused) return;
   p.times.push((Date.now() - p.routeStart) / 1000);
   p.revealed.push(p.revealedThisRoute);
+  if (isConstraintMode(p.mode)) p.points += routePoints(p.routes[p.idx]);
   p.idx++;
   if (p.idx >= NB_ROUTES) {
     p.done = true;
@@ -587,8 +656,9 @@ function showVsResults() {
     card.className = "vs-card" + (p.total === best ? " winner" : "");
     card.innerHTML =
       '<div class="vs-card-name">' + (p.total === best ? "👑 " : "") + p.nickname + '</div>' +
-      '<div class="vs-card-mode">' + MODES[p.mode].emoji + " " + MODES[p.mode].label + '</div>' +
+      '<div class="vs-card-mode">' + modeInfo(p.mode).emoji + " " + modeInfo(p.mode).label + '</div>' +
       '<div class="vs-card-total">' + fmtTotal(p.total) + '</div>' +
+      (isConstraintMode(p.mode) ? '<div class="vs-card-reveals">' + modeInfo(p.mode).emoji + ' ' + p.points + ' points</div>' : "") +
       '<div class="vs-card-reveals">🙈 ' + p.reveals + " nom(s) révélé(s)</div>";
     cards.appendChild(card);
   });
@@ -628,10 +698,11 @@ function showLeaderboard(origin) {
 }
 
 function renderLeaderboard() {
-  const lb = loadLeaderboard().filter(e => (e.site || "sqy") === currentSiteId);
+  // e.site : champ des anciennes versions, conservé pour compatibilité
+  const lb = loadLeaderboard().filter(e => (e.pack || e.site || "sqy") === currentPackId);
   const box = document.getElementById("leaderboard-list");
   box.innerHTML = "";
-  document.getElementById("lb-site").textContent = "📍 " + getSite().name;
+  document.getElementById("lb-pack").textContent = "🎒 Pack " + getPack().name;
   document.getElementById("btn-admin").classList.toggle("active", adminMode);
   document.getElementById("admin-hint").classList.toggle("hidden", !adminMode);
   document.getElementById("admin-tools").classList.toggle("hidden", !adminMode);
@@ -649,8 +720,9 @@ function renderLeaderboard() {
     row.className = "lb-row" + (e.id === lastRunId ? " highlight" : "");
     const d = new Date(e.date);
     const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
-    const modeEmoji = MODES[e.mode || "enfant"].emoji;
-    const reveals = e.reveals ? ' <span class="lb-reveals">🙈' + e.reveals + '</span>' : "";
+    const modeEmoji = modeInfo(e.mode || "enfant").emoji;
+    const reveals = (e.points ? ' <span class="lb-reveals">' + modeEmoji + e.points + 'pts</span>' : "") +
+      (e.reveals ? ' <span class="lb-reveals">🙈' + e.reveals + '</span>' : "");
     row.innerHTML =
       '<span class="lb-rank">' + (medals[i] || (i + 1)) + '</span>' +
       '<span class="lb-info"><span class="lb-name">' + modeEmoji + " " + e.nickname + '</span>' + reveals +
@@ -711,13 +783,13 @@ function closeModal() {
 
 function exportLeaderboard() {
   const data = {
-    app: "happik-runner",
+    app: "happy-time",
     version: APP_VERSION,
     exported: new Date().toISOString(),
     leaderboard: loadLeaderboard(),
   };
   const json = JSON.stringify(data, null, 2);
-  const fname = "happik-scores-" + new Date().toISOString().slice(0, 10) + ".json";
+  const fname = "happy-time-scores-" + new Date().toISOString().slice(0, 10) + ".json";
 
   const actions = [
     { label: "📋 Copier", cls: "btn-blue", readonly: true, fn: () => copyExport(json) },
@@ -810,4 +882,4 @@ function renderVersionInfo() {
 }
 
 renderVersionInfo();
-updateSiteLabel();
+loadPacks();
