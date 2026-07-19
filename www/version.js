@@ -1,9 +1,17 @@
 // Version de l'application.
 // À chaque évolution : incrémenter APP_VERSION et ajouter une entrée en tête du CHANGELOG.
 // Le workflow GitHub Actions lit APP_VERSION pour renseigner le versionName de l'APK.
-const APP_VERSION = "1.5.0";
+const APP_VERSION = "1.6.0";
 
 const CHANGELOG = [
+  {
+    v: "1.6.0",
+    notes: [
+      "Mode Expert débloqué : les prises imposées des vraies pancartes de la salle, avec des points à gagner sur chaque piste",
+      "Les packs d'épreuves sont maintenant des fichiers séparés (packs/*.json), prêts à être partagés",
+      "Nouvelles pistes : Face to Face et Dièdre ; « Cubes » retrouve son vrai nom « Kubrik »",
+    ],
+  },
   {
     v: "1.5.0",
     notes: [

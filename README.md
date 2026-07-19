@@ -15,7 +15,8 @@ de permettre à une communauté de créer et partager ses propres packs.
 3. Crée ton personnage : un **surnom** rigolo (animal + adjectif) et un **mode** :
    - 🐣 **Enfant** : 2 épreuves « jusqu'en haut », le reste « jusqu'au marqueur »
    - 💪 **Adulte** : tout « jusqu'en haut »
-   - 🤘 **Expert** : bientôt !
+   - 🤘 **Expert** : les prises imposées des vraies pancartes (par ex. « uniquement les prises
+     bleues »), avec des **points** à gagner sur chaque épreuve
 4. Pour chaque épreuve, un **indice** s'affiche. Le chrono tourne : trouve l'épreuve,
    accomplis l'objectif, puis reviens **toucher l'écran**. Bouton 🙈 « Je trouve pas ! » si
    besoin (c'est compté !), pause ⏸ possible.
@@ -52,5 +53,14 @@ cd android && ./gradlew assembleDebug
 ```
 
 Le classement est stocké localement sur l'appareil (localStorage).
-Pour ajouter un pack d'épreuves : un objet dans `PACKS` (`www/app.js`) avec un id, un nom
-et la liste des épreuves (nom + indice).
+
+### Ajouter un pack d'épreuves
+
+Les packs sont des fichiers JSON dans `www/packs/` :
+
+1. Créer `www/packs/monpack.json` : `{ "id": "monpack", "name": "Mon pack", "routes": [...] }`
+   — chaque épreuve a un `name`, un `clue` (indice), et en option `noMarker` (pas de marqueur)
+   et `variants` (déclinaisons du mode Expert : `[{ "pts": 5, "txt": "uniquement les prises bleues" }]`,
+   la plus dure en premier).
+2. L'ajouter à la liste `www/packs/index.json`.
+3. L'ajouter aux `ASSETS` de `www/sw.js` pour qu'il soit disponible hors-ligne.

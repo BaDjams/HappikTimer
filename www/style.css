@@ -564,6 +564,29 @@ body {
 
 .reveals-text { font-size: 1rem; opacity: 0.9; }
 
+.points-text { font-size: 1.15rem; font-weight: bold; color: #ffd54f; }
+
+/* contrainte expert : prises imposées */
+.expert-badge {
+  display: inline-block;
+  background: #222;
+  color: #ffd54f;
+  border-radius: 12px;
+  padding: 5px 14px;
+  font-size: 0.95rem;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.vs-var {
+  background: #222;
+  color: #ffd54f;
+  border-radius: 10px;
+  padding: 3px 10px;
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
 .lb-site { font-size: 0.95rem; opacity: 0.85; }
 
 .lb-reveals { font-size: 0.8rem; opacity: 0.85; }

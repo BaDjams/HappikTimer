@@ -1,38 +1,27 @@
 // ---------- DONNÉES ----------
 
-// Packs d'épreuves disponibles. Pour en ajouter un : dupliquer l'objet avec ses épreuves
-// et indices (escalade, parcours d'obstacles, défis en plein air...).
+// Packs d'épreuves : chargés depuis les fichiers www/packs/*.json (liste dans packs/index.json).
+// Un pack = { id, name, routes: [{ name, clue, noMarker?, variants? }] }
 // noMarker: pas de marqueur sur la piste => objectif forcément "jusqu'en haut"
-const PACKS = [
-  {
-    id: "sqy",
-    name: "Hapik SQY",
-    routes: [
-      { name: "Chevrons",        clue: "Suis les flèches qui pointent vers le ciel !" },
-      { name: "Champions",       clue: "Le mur des footballeurs, à toi de marquer un but ! ⚽" },
-      { name: "Vortex",          clue: "La grande tornade rouge qui tourbillonne ! 🌪" },
-      { name: "Jeux Olympiques", clue: "Les anneaux des plus grands champions du monde ! 🥇" },
-      { name: "Sprint",          clue: "La piste de vitesse, la plus haute de toutes ! ⚡" },
-      { name: "Réseaux",         clue: "Le mur connecté, comme Internet ! 🌐" },
-      { name: "Tourbillon Sud",  clue: "Un tourbillon venu tout droit du sud... 🧭" },
-      { name: "Bambou",          clue: "La plante préférée des pandas ! 🐼", noMarker: true },
-      { name: "Casse-tête",      clue: "Le mur qui fait chauffer le cerveau ! 🧩" },
-      { name: "Hapik",           clue: "Le mur qui porte le nom de la salle !" },
-      { name: "Cubes",           clue: "Des carrés, des blocs... empilés partout ! 🟦" },
-      { name: "Rando",           clue: "Accroche-toi aux cordes suspendues ! 🪢" },
-      { name: "Piolet",          clue: "L'outil pointu des alpinistes sur la glace ! ⛏" },
-      { name: "Geek",            clue: "Des chiffres verts comme dans un ordinateur ! 👾" },
-      { name: "Géoloco",         clue: "Où es-tu ? Le mur du GPS te guide ! 📍" },
-      { name: "Shining",         clue: "Le mur qui brille de mille diamants ! 💎" },
-      { name: "Constellations",  clue: "Les étoiles dessinées dans le ciel ! ✨" },
-    ],
-  },
-];
+// variants: déclinaisons de difficulté (prises imposées), triées du plus dur au plus facile,
+//           utilisées par le mode Expert : [{ pts, txt }]
+let PACKS = [];
+
+async function loadPacks() {
+  try {
+    const idx = await fetch("packs/index.json").then(r => r.json());
+    PACKS = await Promise.all(idx.map(f => fetch("packs/" + f).then(r => r.json())));
+  } catch (e) {
+    alert("Impossible de charger les packs d'épreuves. Relance l'application !");
+    PACKS = [];
+  }
+  updatePackLabel();
+}
 
 const MODES = {
   enfant: { emoji: "🐣", label: "Enfant", desc: "2 pistes jusqu'en haut, le reste jusqu'au marqueur" },
   adulte: { emoji: "💪", label: "Adulte", desc: "toutes les pistes jusqu'en haut !" },
-  expert: { emoji: "🤘", label: "Expert", desc: "bientôt disponible...", disabled: true },
+  expert: { emoji: "🤘", label: "Expert", desc: "prises imposées, des points à gagner !" },
 };
 
 const ANIMALS = [
@@ -120,7 +109,8 @@ function showScreen(id) {
 }
 
 function getPack() {
-  return PACKS.find(p => p.id === currentPackId) || PACKS[0];
+  return PACKS.find(p => p.id === currentPackId) || PACKS[0]
+    || { id: "?", name: "chargement...", routes: [] };
 }
 
 // ---------- PACK D'ÉPREUVES ----------
@@ -156,6 +146,10 @@ function makeNickname() {
 }
 
 function chooseActivity(a) {
+  if (getPack().routes.length < NB_ROUTES) {
+    alert("Le pack d'épreuves n'est pas encore chargé, réessaie dans une seconde !");
+    return;
+  }
   activity = a;
   vsSetup = [];
   goToNickname();
@@ -230,9 +224,7 @@ function pickNickname(name) {
 function buildRun(mode) {
   const selected = shuffle(getPack().routes).slice(0, NB_ROUTES);
   let topSet;
-  if (mode === "adulte") {
-    topSet = new Set(selected.map(r => r.name));
-  } else {
+  if (mode === "enfant") {
     // Choix des pistes "jusqu'en haut" : celles sans marqueur d'abord (obligatoire)
     const noMarker = selected.filter(r => r.noMarker);
     const withMarker = shuffle(selected.filter(r => !r.noMarker));
@@ -241,12 +233,24 @@ function buildRun(mode) {
       if (topSet.size >= NB_TOP) break;
       topSet.add(r.name);
     }
+  } else {
+    // adulte et expert : tout jusqu'en haut
+    topSet = new Set(selected.map(r => r.name));
   }
   return selected.map(r => ({
     name: r.name,
     clue: r.clue,
     top: topSet.has(r.name),
+    // expert : la déclinaison la plus dure de la piste (prises imposées)
+    variant: mode === "expert" && r.variants ? r.variants[0] : null,
+    // conservé pour que le versus puisse appliquer le mode de chaque joueur
+    variants: r.variants || null,
   }));
+}
+
+// points gagnés sur une piste en mode expert (1 point si la piste n'a pas de déclinaison)
+function routePoints(route) {
+  return route.variant ? route.variant.pts : 1;
 }
 
 function startRun() {
@@ -272,6 +276,18 @@ function showRoute() {
     badge.textContent = "🎯 Objectif : jusqu'au marqueur";
     badge.className = "objective-badge marker";
   }
+  // contrainte expert (prises imposées)
+  const expertBadge = document.getElementById("expert-badge");
+  if (route.variant) {
+    expertBadge.textContent = "🤘 " + route.variant.pts + " pts : " + route.variant.txt;
+    expertBadge.classList.remove("hidden");
+  } else if (playerMode === "expert") {
+    expertBadge.textContent = "🤘 1 pt : toutes les prises";
+    expertBadge.classList.remove("hidden");
+  } else {
+    expertBadge.classList.add("hidden");
+  }
+
   // réinitialise le bouton "je trouve pas"
   revealedThisRoute = false;
   document.getElementById("route-reveal").classList.add("hidden");
@@ -370,6 +386,7 @@ function saveLeaderboard(lb) {
 
 function finishRun() {
   const total = routeTimes.reduce((a, b) => a + b, 0);
+  const points = playerMode === "expert" ? runRoutes.reduce((s, r) => s + routePoints(r), 0) : 0;
   const entry = {
     id: Date.now(),
     nickname,
@@ -377,8 +394,12 @@ function finishRun() {
     pack: currentPackId,
     total,
     reveals: revealsCount,
+    points,
     date: new Date().toISOString(),
-    routes: runRoutes.map((r, i) => ({ name: r.name, top: r.top, time: routeTimes[i], revealed: revealedFlags[i] })),
+    routes: runRoutes.map((r, i) => ({
+      name: r.name, top: r.top, time: routeTimes[i], revealed: revealedFlags[i],
+      variant: r.variant || undefined,
+    })),
   };
   lastRunId = entry.id;
   const lb = loadLeaderboard();
@@ -398,6 +419,13 @@ function finishRun() {
   document.getElementById("result-reveals").textContent = revealsCount > 0
     ? "🙈 Nom de piste révélé " + revealsCount + " fois"
     : "🧠 Aucun nom révélé, bravo !";
+  const ptsLine = document.getElementById("result-points");
+  if (points > 0) {
+    ptsLine.textContent = "🤘 " + points + " points gagnés !";
+    ptsLine.classList.remove("hidden");
+  } else {
+    ptsLine.classList.add("hidden");
+  }
 
   const box = document.getElementById("result-details");
   box.innerHTML = "";
@@ -410,10 +438,11 @@ function finishRun() {
       if (r.time === max) row.classList.add("slowest");
       else if (r.time === min) row.classList.add("fastest");
     }
+    const variantLine = r.variant ? '<br><span class="detail-obj">🤘 ' + r.variant.pts + ' pts : ' + r.variant.txt + '</span>' : "";
     row.innerHTML =
       '<span class="detail-num">' + (i + 1) + '</span>' +
       '<span class="detail-name">' + r.name + (r.revealed ? " 🙈" : "") +
-      '<br><span class="detail-obj">' + (r.top ? "🚩 jusqu'en haut" : "🎯 jusqu'au marqueur") + '</span></span>' +
+      '<br><span class="detail-obj">' + (r.top ? "🚩 jusqu'en haut" : "🎯 jusqu'au marqueur") + '</span>' + variantLine + '</span>' +
       '<span class="detail-time">' + fmtRoute(r.time) + '</span>';
     box.appendChild(row);
   });
@@ -441,11 +470,16 @@ function startVersus() {
     players: vsSetup.map(p => ({
       nickname: p.nickname,
       mode: p.mode,
-      routes: shuffle(base).map(r => ({ ...r, top: p.mode === "adulte" ? true : r.top })),
+      routes: shuffle(base).map(r => ({
+        ...r,
+        top: p.mode === "enfant" ? r.top : true,
+        variant: p.mode === "expert" && r.variants ? r.variants[0] : null,
+      })),
       idx: 0,
       times: [],
       revealed: [],
       reveals: 0,
+      points: 0,
       routeStart: 0,
       paused: false,
       pausedAt: 0,
@@ -502,6 +536,16 @@ function vsShowRoute(i) {
     obj.textContent = "🎯 jusqu'au marqueur";
     obj.className = "vs-obj marker";
   }
+  const variant = document.getElementById("vs-var-" + i);
+  if (r.variant) {
+    variant.textContent = "🤘 " + r.variant.pts + " pts : " + r.variant.txt;
+    variant.classList.remove("hidden");
+  } else if (p.mode === "expert") {
+    variant.textContent = "🤘 1 pt : toutes les prises";
+    variant.classList.remove("hidden");
+  } else {
+    variant.classList.add("hidden");
+  }
   p.revealedThisRoute = false;
   document.getElementById("vs-reveal-" + i).disabled = false;
   p.routeStart = Date.now();
@@ -519,6 +563,7 @@ function vsDone(i) {
   if (p.done || p.paused) return;
   p.times.push((Date.now() - p.routeStart) / 1000);
   p.revealed.push(p.revealedThisRoute);
+  if (p.mode === "expert") p.points += routePoints(p.routes[p.idx]);
   p.idx++;
   if (p.idx >= NB_ROUTES) {
     p.done = true;
@@ -591,6 +636,7 @@ function showVsResults() {
       '<div class="vs-card-name">' + (p.total === best ? "👑 " : "") + p.nickname + '</div>' +
       '<div class="vs-card-mode">' + MODES[p.mode].emoji + " " + MODES[p.mode].label + '</div>' +
       '<div class="vs-card-total">' + fmtTotal(p.total) + '</div>' +
+      (p.mode === "expert" ? '<div class="vs-card-reveals">🤘 ' + p.points + ' points</div>' : "") +
       '<div class="vs-card-reveals">🙈 ' + p.reveals + " nom(s) révélé(s)</div>";
     cards.appendChild(card);
   });
@@ -653,7 +699,8 @@ function renderLeaderboard() {
     const d = new Date(e.date);
     const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
     const modeEmoji = MODES[e.mode || "enfant"].emoji;
-    const reveals = e.reveals ? ' <span class="lb-reveals">🙈' + e.reveals + '</span>' : "";
+    const reveals = (e.points ? ' <span class="lb-reveals">🤘' + e.points + 'pts</span>' : "") +
+      (e.reveals ? ' <span class="lb-reveals">🙈' + e.reveals + '</span>' : "");
     row.innerHTML =
       '<span class="lb-rank">' + (medals[i] || (i + 1)) + '</span>' +
       '<span class="lb-info"><span class="lb-name">' + modeEmoji + " " + e.nickname + '</span>' + reveals +
@@ -813,4 +860,4 @@ function renderVersionInfo() {
 }
 
 renderVersionInfo();
-updatePackLabel();
+loadPacks();

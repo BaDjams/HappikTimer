@@ -10,6 +10,8 @@ const ASSETS = [
   "app.js",
   "version.js",
   "manifest.webmanifest",
+  "packs/index.json",
+  "packs/sqy.json",
   "icons/icon-192.png",
   "icons/icon-512.png",
   "icons/icon-180.png",

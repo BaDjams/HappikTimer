@@ -1,0 +1,163 @@
+{
+  "id": "sqy",
+  "name": "Hapik SQY",
+  "description": "Les pistes d'escalade de la salle Hapik Saint-Quentin-en-Yvelines",
+  "routes": [
+    {
+      "name": "Chevrons",
+      "clue": "Suis les flèches qui pointent vers le ciel !"
+    },
+    {
+      "name": "Champions",
+      "clue": "Le mur des footballeurs, à toi de marquer un but ! ⚽"
+    },
+    {
+      "name": "Vortex",
+      "clue": "La grande tornade rouge qui tourbillonne ! 🌪"
+    },
+    {
+      "name": "Jeux Olympiques",
+      "clue": "Les anneaux des plus grands champions du monde ! 🥇",
+      "variants": [
+        { "pts": 4, "txt": "uniquement les prises bleues" },
+        { "pts": 3, "txt": "uniquement les prises vertes" },
+        { "pts": 2, "txt": "prises bleues et vertes" }
+      ]
+    },
+    {
+      "name": "Sprint",
+      "clue": "La piste de vitesse, la plus haute de toutes ! ⚡",
+      "variants": [
+        { "pts": 3, "txt": "uniquement les prises jaunes" },
+        { "pts": 2, "txt": "uniquement les prises bleues" },
+        { "pts": 1, "txt": "prises bleues et jaunes" }
+      ]
+    },
+    {
+      "name": "Réseaux",
+      "clue": "Le mur connecté, comme Internet ! 🌐",
+      "variants": [
+        { "pts": 5, "txt": "uniquement les prises blanches" },
+        { "pts": 3, "txt": "uniquement les prises noires" },
+        { "pts": 2, "txt": "prises noires et blanches" }
+      ]
+    },
+    {
+      "name": "Tourbillon Sud",
+      "clue": "Un tourbillon venu tout droit du sud... 🧭",
+      "variants": [
+        { "pts": 3, "txt": "uniquement les prises bleues et jaunes" },
+        { "pts": 2, "txt": "uniquement les prises anneaux multicolores" },
+        { "pts": 1, "txt": "toutes les prises" }
+      ]
+    },
+    {
+      "name": "Bambou",
+      "clue": "La plante préférée des pandas ! 🐼",
+      "noMarker": true,
+      "variants": [
+        { "pts": 2, "txt": "monte SANS les mains !" },
+        { "pts": 1, "txt": "avec les mains" }
+      ]
+    },
+    {
+      "name": "Casse-tête",
+      "clue": "Le mur qui fait chauffer le cerveau ! 🧩",
+      "variants": [
+        { "pts": 5, "txt": "uniquement les prises bleues" },
+        { "pts": 3, "txt": "uniquement les prises jaunes" },
+        { "pts": 2, "txt": "prises bleues et jaunes" }
+      ]
+    },
+    {
+      "name": "Hapik",
+      "clue": "Le mur qui porte le nom de la salle !",
+      "variants": [
+        { "pts": 5, "txt": "uniquement les prises rouges" },
+        { "pts": 3, "txt": "uniquement les prises blanches" },
+        { "pts": 1, "txt": "prises rouges et blanches" }
+      ]
+    },
+    {
+      "name": "Kubrik",
+      "clue": "Des carrés, des blocs... empilés partout ! 🟦",
+      "variants": [
+        { "pts": 5, "txt": "uniquement les prises rouges" },
+        { "pts": 2, "txt": "prises bleues et vertes" },
+        { "pts": 1, "txt": "toutes les prises (rouges, bleues, vertes)" }
+      ]
+    },
+    {
+      "name": "Rando",
+      "clue": "Accroche-toi aux cordes suspendues ! 🪢",
+      "variants": [
+        { "pts": 4, "txt": "uniquement les prises en bois" },
+        { "pts": 3, "txt": "prises bois et jaunes" },
+        { "pts": 2, "txt": "prises bois, jaunes et vertes" }
+      ]
+    },
+    {
+      "name": "Piolet",
+      "clue": "L'outil pointu des alpinistes sur la glace ! ⛏",
+      "variants": [
+        { "pts": 5, "txt": "uniquement les prises bleues" },
+        { "pts": 3, "txt": "uniquement les prises jaunes" },
+        { "pts": 2, "txt": "prises bleues et jaunes" }
+      ]
+    },
+    {
+      "name": "Geek",
+      "clue": "Des chiffres verts comme dans un ordinateur ! 👾",
+      "variants": [
+        { "pts": 4, "txt": "prises noires et bleues" },
+        { "pts": 3, "txt": "prises noires et vertes" },
+        { "pts": 2, "txt": "prises noires, bleues et vertes" }
+      ]
+    },
+    {
+      "name": "Géoloco",
+      "clue": "Où es-tu ? Le mur du GPS te guide ! 📍",
+      "variants": [
+        { "pts": 5, "txt": "uniquement les prises bleues" },
+        { "pts": 2, "txt": "uniquement les prises rouges" },
+        { "pts": 1, "txt": "prises bleues et rouges" }
+      ]
+    },
+    {
+      "name": "Shining",
+      "clue": "Le mur qui brille de mille diamants ! 💎",
+      "variants": [
+        { "pts": 4, "txt": "uniquement les prises violettes" },
+        { "pts": 3, "txt": "uniquement les prises jaunes" },
+        { "pts": 1, "txt": "prises violettes et jaunes" }
+      ]
+    },
+    {
+      "name": "Constellation",
+      "clue": "Les étoiles dessinées dans le ciel ! ✨",
+      "variants": [
+        { "pts": 3, "txt": "uniquement les prises violettes" },
+        { "pts": 2, "txt": "uniquement les prises bleues" },
+        { "pts": 1, "txt": "prises bleues et violettes" }
+      ]
+    },
+    {
+      "name": "Face to Face",
+      "clue": "Deux murs jumeaux qui se regardent ! 👀",
+      "variants": [
+        { "pts": 4, "txt": "uniquement les prises violettes" },
+        { "pts": 3, "txt": "uniquement les prises vertes" },
+        { "pts": 2, "txt": "prises violettes et vertes" }
+      ]
+    },
+    {
+      "name": "Dièdre",
+      "clue": "Le grand angle entre deux murs, pour les champions ! 📐",
+      "variants": [
+        { "pts": 4, "txt": "uniquement les prises rouges" },
+        { "pts": 3, "txt": "uniquement les prises vertes" },
+        { "pts": 2, "txt": "prises rouges et vertes" }
+      ]
+    }
+  ]
+}
