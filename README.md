@@ -12,11 +12,11 @@ de permettre à une communauté de créer et partager ses propres packs.
 
 1. Choisis ton **pack d'épreuves** (🎒 en bas de l'accueil).
 2. Choisis ton activité : **course solo** ou **Versus 1 contre 1** (écran partagé, chacun son chrono).
-3. Crée ton personnage : un **surnom** rigolo (animal + adjectif) et un **mode** :
-   - 🐣 **Enfant** : 2 épreuves « jusqu'en haut », le reste « jusqu'au marqueur »
-   - 💪 **Adulte** : tout « jusqu'en haut »
-   - 🤘 **Expert** : les prises imposées des vraies pancartes (par ex. « uniquement les prises
-     bleues »), avec des **points** à gagner sur chaque épreuve
+3. Crée ton personnage : un **surnom** rigolo (animal + adjectif) et un **niveau** :
+   - 🐣 **Facile** : 2 épreuves « jusqu'en haut », le reste « jusqu'au marqueur »
+   - 💪 **Normal** : tout « jusqu'en haut »
+   - 🔥 **Difficile** : prises imposées des pancartes, niveau intermédiaire, **points** à gagner
+   - 🤘 **Expert** : les prises imposées les plus dures, un max de **points**
 4. Pour chaque épreuve, un **indice** s'affiche. Le chrono tourne : trouve l'épreuve,
    accomplis l'objectif, puis reviens **toucher l'écran**. Bouton 🙈 « Je trouve pas ! » si
    besoin (c'est compté !), pause ⏸ possible.

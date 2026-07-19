@@ -523,9 +523,11 @@ body {
 /* ---------- Modes (création du personnage) ---------- */
 
 .mode-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
-  justify-content: center;
+  width: 100%;
+  max-width: 320px;
 }
 
 .mode-chip {

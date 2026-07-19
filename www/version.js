@@ -1,9 +1,15 @@
 // Version de l'application.
 // À chaque évolution : incrémenter APP_VERSION et ajouter une entrée en tête du CHANGELOG.
 // Le workflow GitHub Actions lit APP_VERSION pour renseigner le versionName de l'APK.
-const APP_VERSION = "1.6.0";
+const APP_VERSION = "1.7.0";
 
 const CHANGELOG = [
+  {
+    v: "1.7.0",
+    notes: [
+      "4 niveaux de difficulté : Facile 🐣 (2 pistes en haut), Normal 💪 (tout en haut), Difficile 🔥 (prises imposées intermédiaires) et Expert 🤘 (les plus dures)",
+    ],
+  },
   {
     v: "1.6.0",
     notes: [

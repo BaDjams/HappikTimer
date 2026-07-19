@@ -19,10 +19,30 @@ async function loadPacks() {
 }
 
 const MODES = {
-  enfant: { emoji: "🐣", label: "Enfant", desc: "2 pistes jusqu'en haut, le reste jusqu'au marqueur" },
-  adulte: { emoji: "💪", label: "Adulte", desc: "toutes les pistes jusqu'en haut !" },
-  expert: { emoji: "🤘", label: "Expert", desc: "prises imposées, des points à gagner !" },
+  facile:    { emoji: "🐣", label: "Facile",    desc: "2 pistes jusqu'en haut, le reste jusqu'au marqueur" },
+  normal:    { emoji: "💪", label: "Normal",    desc: "toutes les pistes jusqu'en haut !" },
+  difficile: { emoji: "🔥", label: "Difficile", desc: "prises imposées (niveau intermédiaire), des points à gagner" },
+  expert:    { emoji: "🤘", label: "Expert",    desc: "les prises les plus dures, un max de points !" },
 };
+
+// les scores des anciennes versions utilisaient "enfant" et "adulte"
+function modeInfo(m) {
+  const key = { enfant: "facile", adulte: "normal" }[m] || m;
+  return MODES[key] || MODES.facile;
+}
+
+// modes avec prises imposées (déclinaisons des pancartes) et points
+function isConstraintMode(m) {
+  return m === "difficile" || m === "expert";
+}
+
+// déclinaison à appliquer selon le mode : expert = la plus dure (1re),
+// difficile = l'intermédiaire (2e, ou la dernière s'il n'y en a que deux)
+function pickVariant(mode, variants) {
+  if (!variants || !isConstraintMode(mode)) return null;
+  if (mode === "expert") return variants[0];
+  return variants[1] || variants[variants.length - 1];
+}
 
 const ANIMALS = [
   { n: "Caribou", f: false }, { n: "Fourmi", f: true },  { n: "Panda", f: false },
@@ -56,8 +76,8 @@ const EMOJIS = ["🎉", "⭐", "🔥", "💪", "🚀", "🤩", "👏", "🏅"];
 
 let currentPackId = localStorage.getItem(PACK_KEY) || "sqy";
 let activity = "solo";        // "solo" | "versus"
-let selectedMode = "enfant";  // mode en cours de sélection à la création du personnage
-let playerMode = "enfant";    // mode du joueur solo
+let selectedMode = "facile";  // mode en cours de sélection à la création du personnage
+let playerMode = "facile";    // mode du joueur solo
 let nickname = "";
 let vsSetup = [];             // joueurs du duel en cours de création [{nickname, mode}]
 
@@ -156,7 +176,7 @@ function chooseActivity(a) {
 }
 
 function goToNickname() {
-  selectedMode = "enfant";
+  selectedMode = "facile";
   updateModeChips();
   updateNicknameTitle();
   rollNicknames();
@@ -200,7 +220,7 @@ function pickNickname(name) {
   if (activity === "versus") {
     vsSetup.push({ nickname: name, mode: selectedMode });
     if (vsSetup.length < 2) {
-      selectedMode = "enfant";
+      selectedMode = "facile";
       updateModeChips();
       updateNicknameTitle();
       rollNicknames();
@@ -212,9 +232,9 @@ function pickNickname(name) {
   nickname = name;
   playerMode = selectedMode;
   document.getElementById("ready-nickname").textContent = nickname;
-  document.getElementById("ready-mode").textContent = MODES[playerMode].emoji + " Mode " + MODES[playerMode].label;
+  document.getElementById("ready-mode").textContent = modeInfo(playerMode).emoji + " Mode " + modeInfo(playerMode).label;
   document.getElementById("ready-explain").innerHTML =
-    "Tu vas faire <strong>10 pistes</strong> (" + MODES[playerMode].desc + ").<br>" +
+    "Tu vas faire <strong>10 pistes</strong> (" + modeInfo(playerMode).desc + ").<br>" +
     "À chaque indice, trouve la bonne piste,<br>grimpe jusqu'à l'objectif,<br>puis reviens toucher l'écran ! 🏃💨";
   showScreen("screen-ready");
 }
@@ -224,7 +244,7 @@ function pickNickname(name) {
 function buildRun(mode) {
   const selected = shuffle(getPack().routes).slice(0, NB_ROUTES);
   let topSet;
-  if (mode === "enfant") {
+  if (mode === "facile") {
     // Choix des pistes "jusqu'en haut" : celles sans marqueur d'abord (obligatoire)
     const noMarker = selected.filter(r => r.noMarker);
     const withMarker = shuffle(selected.filter(r => !r.noMarker));
@@ -234,15 +254,15 @@ function buildRun(mode) {
       topSet.add(r.name);
     }
   } else {
-    // adulte et expert : tout jusqu'en haut
+    // normal, difficile et expert : tout jusqu'en haut
     topSet = new Set(selected.map(r => r.name));
   }
   return selected.map(r => ({
     name: r.name,
     clue: r.clue,
     top: topSet.has(r.name),
-    // expert : la déclinaison la plus dure de la piste (prises imposées)
-    variant: mode === "expert" && r.variants ? r.variants[0] : null,
+    // difficile/expert : déclinaison de la pancarte (prises imposées)
+    variant: pickVariant(mode, r.variants),
     // conservé pour que le versus puisse appliquer le mode de chaque joueur
     variants: r.variants || null,
   }));
@@ -276,13 +296,14 @@ function showRoute() {
     badge.textContent = "🎯 Objectif : jusqu'au marqueur";
     badge.className = "objective-badge marker";
   }
-  // contrainte expert (prises imposées)
+  // contrainte difficile/expert (prises imposées)
   const expertBadge = document.getElementById("expert-badge");
+  const modeEmoji = modeInfo(playerMode).emoji;
   if (route.variant) {
-    expertBadge.textContent = "🤘 " + route.variant.pts + " pts : " + route.variant.txt;
+    expertBadge.textContent = modeEmoji + " " + route.variant.pts + " pts : " + route.variant.txt;
     expertBadge.classList.remove("hidden");
-  } else if (playerMode === "expert") {
-    expertBadge.textContent = "🤘 1 pt : toutes les prises";
+  } else if (isConstraintMode(playerMode)) {
+    expertBadge.textContent = modeEmoji + " 1 pt : toutes les prises";
     expertBadge.classList.remove("hidden");
   } else {
     expertBadge.classList.add("hidden");
@@ -386,7 +407,7 @@ function saveLeaderboard(lb) {
 
 function finishRun() {
   const total = routeTimes.reduce((a, b) => a + b, 0);
-  const points = playerMode === "expert" ? runRoutes.reduce((s, r) => s + routePoints(r), 0) : 0;
+  const points = isConstraintMode(playerMode) ? runRoutes.reduce((s, r) => s + routePoints(r), 0) : 0;
   const entry = {
     id: Date.now(),
     nickname,
@@ -408,7 +429,7 @@ function finishRun() {
   saveLeaderboard(lb);
 
   document.getElementById("result-nickname").textContent = nickname;
-  document.getElementById("result-mode").textContent = MODES[playerMode].emoji + " " + MODES[playerMode].label;
+  document.getElementById("result-mode").textContent = modeInfo(playerMode).emoji + " " + modeInfo(playerMode).label;
   document.getElementById("result-total").textContent = fmtTotal(total) + " min";
   const packLb = lb.filter(e => (e.pack || e.site || "sqy") === currentPackId);
   const rank = packLb.findIndex(e => e.id === entry.id) + 1;
@@ -421,7 +442,7 @@ function finishRun() {
     : "🧠 Aucun nom révélé, bravo !";
   const ptsLine = document.getElementById("result-points");
   if (points > 0) {
-    ptsLine.textContent = "🤘 " + points + " points gagnés !";
+    ptsLine.textContent = modeInfo(playerMode).emoji + " " + points + " points gagnés !";
     ptsLine.classList.remove("hidden");
   } else {
     ptsLine.classList.add("hidden");
@@ -438,7 +459,7 @@ function finishRun() {
       if (r.time === max) row.classList.add("slowest");
       else if (r.time === min) row.classList.add("fastest");
     }
-    const variantLine = r.variant ? '<br><span class="detail-obj">🤘 ' + r.variant.pts + ' pts : ' + r.variant.txt + '</span>' : "";
+    const variantLine = r.variant ? '<br><span class="detail-obj">' + modeInfo(playerMode).emoji + ' ' + r.variant.pts + ' pts : ' + r.variant.txt + '</span>' : "";
     row.innerHTML =
       '<span class="detail-num">' + (i + 1) + '</span>' +
       '<span class="detail-name">' + r.name + (r.revealed ? " 🙈" : "") +
@@ -456,7 +477,7 @@ function showVsReady() {
   [0, 1].forEach(i => {
     document.getElementById("vs-ready-name-" + i).textContent = vsSetup[i].nickname;
     document.getElementById("vs-ready-mode-" + i).textContent =
-      MODES[vsSetup[i].mode].emoji + " " + MODES[vsSetup[i].mode].label;
+      modeInfo(vsSetup[i].mode).emoji + " " + modeInfo(vsSetup[i].mode).label;
   });
   showScreen("screen-vs-ready");
 }
@@ -472,8 +493,8 @@ function startVersus() {
       mode: p.mode,
       routes: shuffle(base).map(r => ({
         ...r,
-        top: p.mode === "enfant" ? r.top : true,
-        variant: p.mode === "expert" && r.variants ? r.variants[0] : null,
+        top: p.mode === "facile" ? r.top : true,
+        variant: pickVariant(p.mode, r.variants),
       })),
       idx: 0,
       times: [],
@@ -537,11 +558,12 @@ function vsShowRoute(i) {
     obj.className = "vs-obj marker";
   }
   const variant = document.getElementById("vs-var-" + i);
+  const pEmoji = modeInfo(p.mode).emoji;
   if (r.variant) {
-    variant.textContent = "🤘 " + r.variant.pts + " pts : " + r.variant.txt;
+    variant.textContent = pEmoji + " " + r.variant.pts + " pts : " + r.variant.txt;
     variant.classList.remove("hidden");
-  } else if (p.mode === "expert") {
-    variant.textContent = "🤘 1 pt : toutes les prises";
+  } else if (isConstraintMode(p.mode)) {
+    variant.textContent = pEmoji + " 1 pt : toutes les prises";
     variant.classList.remove("hidden");
   } else {
     variant.classList.add("hidden");
@@ -563,7 +585,7 @@ function vsDone(i) {
   if (p.done || p.paused) return;
   p.times.push((Date.now() - p.routeStart) / 1000);
   p.revealed.push(p.revealedThisRoute);
-  if (p.mode === "expert") p.points += routePoints(p.routes[p.idx]);
+  if (isConstraintMode(p.mode)) p.points += routePoints(p.routes[p.idx]);
   p.idx++;
   if (p.idx >= NB_ROUTES) {
     p.done = true;
@@ -634,9 +656,9 @@ function showVsResults() {
     card.className = "vs-card" + (p.total === best ? " winner" : "");
     card.innerHTML =
       '<div class="vs-card-name">' + (p.total === best ? "👑 " : "") + p.nickname + '</div>' +
-      '<div class="vs-card-mode">' + MODES[p.mode].emoji + " " + MODES[p.mode].label + '</div>' +
+      '<div class="vs-card-mode">' + modeInfo(p.mode).emoji + " " + modeInfo(p.mode).label + '</div>' +
       '<div class="vs-card-total">' + fmtTotal(p.total) + '</div>' +
-      (p.mode === "expert" ? '<div class="vs-card-reveals">🤘 ' + p.points + ' points</div>' : "") +
+      (isConstraintMode(p.mode) ? '<div class="vs-card-reveals">' + modeInfo(p.mode).emoji + ' ' + p.points + ' points</div>' : "") +
       '<div class="vs-card-reveals">🙈 ' + p.reveals + " nom(s) révélé(s)</div>";
     cards.appendChild(card);
   });
@@ -698,8 +720,8 @@ function renderLeaderboard() {
     row.className = "lb-row" + (e.id === lastRunId ? " highlight" : "");
     const d = new Date(e.date);
     const dateStr = d.toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" });
-    const modeEmoji = MODES[e.mode || "enfant"].emoji;
-    const reveals = (e.points ? ' <span class="lb-reveals">🤘' + e.points + 'pts</span>' : "") +
+    const modeEmoji = modeInfo(e.mode || "enfant").emoji;
+    const reveals = (e.points ? ' <span class="lb-reveals">' + modeEmoji + e.points + 'pts</span>' : "") +
       (e.reveals ? ' <span class="lb-reveals">🙈' + e.reveals + '</span>' : "");
     row.innerHTML =
       '<span class="lb-rank">' + (medals[i] || (i + 1)) + '</span>' +
